@@ -1,0 +1,26 @@
+db:
+  type: "postgres"
+  host: "localhost"
+  port: 5432
+  user: "postgres"
+  password: "your_password"
+  dbname: "cookbook"
+  max_open_conns: 20
+  max_idle_conns: 10
+  conn_max_lifetime: "10m"
+  time_zone: "Asia/Shanghai"
+  log_level: 4
+  schema_file: "config/schema.sql"
+  postgres:
+    sslmode: "disable"
+auth:
+  crypt_util:
+    default_cost: 10
+  password: "your_password"
+  secret_key: "your_secret_key"
+  token_expire: 24
+img_util:
+  default_width: 800
+  default_height: 600
+  default_quality: 80
+  default_storage_dir: "uploads/"

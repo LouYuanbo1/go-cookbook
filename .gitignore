@@ -30,3 +30,8 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Uploads
+backend/cmd/uploads/*
+# Config
+backend/config/config.yaml
