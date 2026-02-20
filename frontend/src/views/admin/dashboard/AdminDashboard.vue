@@ -48,13 +48,19 @@
       <p v-if="error && currentType === 'dishes'" class="error">{{ error }}</p>
     </div>
 
-    <!-- 新增导入按钮 -->
+    <!-- 原有导入按钮 -->
     <div class="button-group">
       <button class="export-btn" @click="openImportModal('ingredients')">导入食材</button>
     </div>
     <div class="button-group">
       <button class="export-btn" @click="openImportModal('products')">导入商品</button>
     </div>
+
+    <!-- ========== 新增：生成二维码按钮 ========== -->
+    <div class="button-group">
+      <button class="export-btn" @click="openQRModal">生成二维码</button>
+    </div>
+    <!-- ========== 新增结束 ========== -->
   </div>
 
   <!-- 自定义提示 Toast（原有） -->
@@ -62,7 +68,7 @@
     {{ toastMessage }}
   </div>
 
-  <!-- 导入弹窗 (Teleport) -->
+  <!-- 导入弹窗 (Teleport) 原有 -->
   <Teleport to="body">
     <div v-if="showImportModal" class="modal-overlay" @click.self="closeImportModal">
       <div class="modal-container">
@@ -75,13 +81,26 @@
       </div>
     </div>
   </Teleport>
+
+  <!-- ========== 新增：二维码生成器弹窗 (Teleport) ========== -->
+  <Teleport to="body">
+    <div v-if="showQRModal" class="modal-overlay" @click.self="closeQRModal">
+      <div class="modal-container">
+        <QRCodeGenerator @close="closeQRModal" />
+      </div>
+    </div>
+  </Teleport>
+  <!-- ========== 新增结束 ========== -->
 </template>
 
 <script setup lang="ts">
 import request from '../../../api/request';
 import { ref } from 'vue';
 import { AxiosError } from 'axios';
-import ImportExcel from '../../../components/excel/ImportExcel.vue'; // 根据实际路径调整
+import ImportExcel from '../../../components/excel/ImportExcel.vue';
+// ========== 新增：导入二维码生成组件 ==========
+import QRCodeGenerator from '../../../components/qrcode/QRCodeGenerator.vue'; // 根据实际路径调整
+// ========== 新增结束 ==========
 
 // 原有状态
 const loading = ref(false);
@@ -91,9 +110,13 @@ const toastVisible = ref(false);
 const toastMessage = ref('');
 const toastType = ref<'success' | 'error'>('success');
 
-// 新增弹窗状态
+// 原有弹窗状态
 const showImportModal = ref(false);
 const importType = ref<'ingredients' | 'products'>('ingredients');
+
+// ========== 新增：二维码弹窗状态 ==========
+const showQRModal = ref(false);
+// ========== 新增结束 ==========
 
 // 原有方法
 const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -178,7 +201,7 @@ function getFileNameFromContentDisposition(contentDisposition: string | null, ty
   return defaultNames[type] || 'export.xlsx';
 }
 
-// 新增方法
+// 原有导入方法
 const openImportModal = (type: 'ingredients' | 'products') => {
   importType.value = type;
   showImportModal.value = true;
@@ -189,10 +212,18 @@ const closeImportModal = () => {
 };
 
 const handleImportSuccess = () => {
-  // 可以在这里刷新列表数据（如果需要）
-  // 例如重新获取食材或商品列表
   showToast('导入成功', 'success');
 };
+
+// ========== 新增：二维码弹窗方法 ==========
+const openQRModal = () => {
+  showQRModal.value = true;
+};
+
+const closeQRModal = () => {
+  showQRModal.value = false;
+};
+// ========== 新增结束 ==========
 </script>
 
 <style scoped>
