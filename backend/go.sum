@@ -1,9 +1,5 @@
 filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
-github.com/LouYuanbo1/go-webservice v0.0.0-20260217112026-656f134963b7 h1:RggLWcM+9tCcYK1p8EOPv//diG5F/A+R0+Q5Cqpv/L4=
-github.com/LouYuanbo1/go-webservice v0.0.0-20260217112026-656f134963b7/go.mod h1:V5SuNt0fLsGpTCGoCPHv9ZpO4B9D3JnJlTBp9jCh+sg=
-github.com/LouYuanbo1/go-webservice v0.0.0-20260217142407-7b173a277721 h1:OGAt5XIJriJPcnlEFZfMMMpcCzPDZj9B/mqhrLPjQfk=
-github.com/LouYuanbo1/go-webservice v0.0.0-20260217142407-7b173a277721/go.mod h1:V5SuNt0fLsGpTCGoCPHv9ZpO4B9D3JnJlTBp9jCh+sg=
 github.com/LouYuanbo1/go-webservice v0.0.0-20260219191402-b73a71ff2c90 h1:rKndFgwqrj1pDW/HOjMjKbas5hl/IxnG6REUYJadu6o=
 github.com/LouYuanbo1/go-webservice v0.0.0-20260219191402-b73a71ff2c90/go.mod h1:V5SuNt0fLsGpTCGoCPHv9ZpO4B9D3JnJlTBp9jCh+sg=
 github.com/bytedance/gopkg v0.1.3 h1:TPBSwH8RsouGCBcMBktLt1AymVo2TVsBVCY4b6TnZ/M=
@@ -100,6 +96,8 @@ github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjR
 github.com/rogpeppe/go-internal v1.10.0/go.mod h1:UQnix2H7Ngw/k4C5ijL5+65zddjncjaFoBhdsK/akog=
 github.com/sagikazarmark/locafero v0.11.0 h1:1iurJgmM9G3PA/I+wWYIOw/5SyBtxapeHDcg+AAIFXc=
 github.com/sagikazarmark/locafero v0.11.0/go.mod h1:nVIGvgyzw595SUSUE6tvCp3YYTeHs15MvlmU87WwIik=
+github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e h1:MRM5ITcdelLK2j1vwZ3Je0FKVCfqOLp5zO6trqMLYs0=
+github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e/go.mod h1:XV66xRDqSt+GTGFMVlhk3ULuV0y9ZmzeVGR4mloJI3M=
 github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 h1:+jumHNA0Wrelhe64i8F6HNlS8pkoyMv5sreGx2Ry5Rw=
 github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8/go.mod h1:3n1Cwaq1E1/1lhQhtRK2ts/ZwZEhjcQeJQ1RuC6Q/8U=
 github.com/spf13/afero v1.15.0 h1:b/YBCLWAJdFWJTN9cLhiXXcD7mzKn9Dm86dNnfyQw1I=

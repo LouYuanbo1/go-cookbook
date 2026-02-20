@@ -6,6 +6,7 @@ import (
 	dishController "go-cookbook/internal/controller/dish"
 	ingredientController "go-cookbook/internal/controller/ingredient"
 	productController "go-cookbook/internal/controller/product"
+	qrcodeController "go-cookbook/internal/controller/qrcode"
 	"go-cookbook/internal/jwt"
 	"go-cookbook/internal/repo"
 	authService "go-cookbook/internal/service/auth"
@@ -43,6 +44,7 @@ func main() {
 	productService := productService.NewProductService(factory, imgUtil)
 	ingredientService := ingredientService.NewIngredientService(factory, imgUtil)
 
+	qrCodeController := qrcodeController.NewQRCodeController()
 	dishController := dishController.NewDishController(dishService, imgUtil)
 	productController := productController.NewProductController(productService, imgUtil)
 	ingredientController := ingredientController.NewIngredientController(ingredientService, imgUtil)
@@ -57,6 +59,7 @@ func main() {
 
 	router.Static("/uploads", "./uploads")
 
+	qrCodeController.RegisterRoutes(router)
 	dishController.RegisterRoutes(router, jwtService)
 	productController.RegisterRoutes(router, jwtService)
 	ingredientController.RegisterRoutes(router, jwtService)
