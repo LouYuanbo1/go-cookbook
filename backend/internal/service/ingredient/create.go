@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go-cookbook/internal/dto"
 	"go-cookbook/internal/model"
+	"go-cookbook/internal/utils"
 
 	"github.com/LouYuanbo1/go-webservice/gormx/options"
 )
@@ -13,7 +14,13 @@ func (is *ingredientService) Create(ctx context.Context, req *dto.CreateIngredie
 	// 处理图片
 	imageURLs := make([]*model.IngredientImage, 0, len(req.Images))
 	for i, fileHeader := range req.Images {
-		url, err := is.processImage(fileHeader, req.IngredientCode)
+		url, err := utils.ProcessImageFileHeader(
+			is.imgUtil,
+			fileHeader,
+			[]string{"uploads", "ingredients"},
+			req.IngredientCode,
+			i,
+		)
 		if err != nil {
 			return fmt.Errorf("处理图片失败: %w", err)
 		}

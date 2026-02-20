@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go-cookbook/internal/model"
+	"go-cookbook/internal/utils"
 	"log"
 	"mime/multipart"
 
@@ -154,7 +155,15 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 			}
 
 			if len(picture) > 0 {
-				url, err := ds.processExcelPicture(picture[0], dishCode)
+				sortOrder := col - len(rows[row-1]) - 1
+
+				url, err := utils.ProcessExcelPicture(
+					ds.imgUtil,
+					picture[0],
+					[]string{"uploads", "dishes"},
+					dishCode,
+					sortOrder,
+				)
 				if err != nil {
 					continue
 				}
@@ -162,7 +171,7 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 				imageURLs = append(imageURLs, &model.DishImage{
 					DishCode: dishCode,
 					// 排序,用于显示顺序
-					SortOrder: col - len(rows[row-1]) - 1,
+					SortOrder: sortOrder,
 					ImageURL:  url,
 				})
 			}
