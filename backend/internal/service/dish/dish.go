@@ -4,6 +4,7 @@ import (
 	"context"
 	"go-cookbook/internal/dto"
 	"go-cookbook/internal/repo"
+	"mime/multipart"
 
 	"github.com/LouYuanbo1/go-webservice/imgutil"
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,7 @@ type DishService interface {
 
 	FindByCursor(ctx context.Context, cursor uint64, limit int) (*dto.ViewDishCardListWithCursor, error)
 
+	Import(ctx context.Context, fileHeader *multipart.FileHeader, batchSize int) error
 	Export(gctx *gin.Context, batchSize int) error
 
 	//查询对一致性要求不高,可以使用两次分别查询菜品和对应食材,减少复杂性
