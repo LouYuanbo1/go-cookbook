@@ -7,7 +7,6 @@ type CreateDishRequest struct {
 	Name        string `form:"name" json:"name"`
 	Description string `form:"description" json:"description"`
 	Recipe      string `form:"recipe" json:"recipe"`
-
 	Ingredients []*CreateDishIngredientRequest `form:"ingredients" json:"ingredients"`
 	Images      []*multipart.FileHeader        `form:"images" json:"images"`
 }
@@ -17,16 +16,12 @@ type UpdateDishRequest struct {
 	Name        string `form:"name" json:"name"`
 	Description string `form:"description" json:"description"`
 	Recipe      string `form:"recipe" json:"recipe"`
-
 	Ingredients []*UpdateDishIngredientRequest `form:"ingredients" json:"ingredients"`
-
 	/*
 		NewImageTempIDs []string                `form:"newImageTempIDs" json:"newImageTempIDs"`
 		NewImages       []*multipart.FileHeader `form:"newImages" json:"newImages"`
 	*/
-
 	NewImages []NewImageFile `form:"newImages" json:"newImages"`
-
 	Images []ImageRequest `form:"images" json:"images"`
 }
 

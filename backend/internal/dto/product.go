@@ -26,15 +26,12 @@ type UpdateProductRequest struct {
 	Description    string             `form:"description" json:"description"`
 	Price          float64            `form:"price" json:"price"`
 	AllergenType   model.AllergenType `form:"allergenType" json:"allergenType"`
-
 	// 新上传的图片文件（通过multipart/form-data）
 	/*
 	NewImageTempIDs []string `form:"newImageTempIDs" json:"newImageTempIDs"`
-
 	NewImages []*multipart.FileHeader `form:"newImages" json:"newImages"`
 	*/
 	NewImages []NewImageFile `form:"newImages" json:"newImages"`
-
 	// 最终的图片配置（按顺序排列）
 	Images []ImageRequest `form:"images" json:"images"`
 }
