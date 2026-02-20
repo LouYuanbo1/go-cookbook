@@ -13,14 +13,11 @@ type UpdateIngredientRequest struct {
 	IngredientCode string `form:"ingredientCode" json:"ingredientCode"`
 	Name           string `form:"name" json:"name"`
 	Description    string `form:"description" json:"description"`
-
 	/*
 		NewImageTempIDs []string                `form:"newImageTempIDs" json:"newImageTempIDs"`
 		NewImages       []*multipart.FileHeader `form:"newImages" json:"newImages"`
 	*/
-
 	NewImages []NewImageFile `form:"newImages" json:"newImages"`
-
 	Images []ImageRequest `form:"images" json:"images"`
 }
 
