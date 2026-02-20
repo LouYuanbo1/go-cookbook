@@ -202,9 +202,19 @@ watch(
 );
 
 // ---------- 监听 deletedImageIds 并通知父组件 ----------
+/*
 watch(deletedImageIds, (val) => {
   emit('update:deletedIds', new Set(val)); // 传递副本
 });
+*/
+watch(
+  () => props.modelValue,
+  (val) => {
+    innerImageList.value = val.map(item => ({ ...item })); // 仅同步列表，不清空已删除ID
+  },
+  { deep: true, immediate: true }
+);
+
 
 // ---------- 辅助函数：将内部最新状态同步给父组件 ----------
 const syncToParent = () => {
@@ -254,6 +264,8 @@ const removeImage = (index: number) => {
   // 记录删除的现有图片ID
   if (item.status === 'existing' && item.id) {
     deletedImageIds.value.add(item.id);
+    console.log("删除图片ID:", item.id);
+    emit('update:deletedIds', new Set(deletedImageIds.value));
   }
 
   // 释放新图片的blob URL

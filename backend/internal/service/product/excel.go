@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go-cookbook/internal/model"
+	"go-cookbook/internal/utils"
 	"log"
 	"mime/multipart"
 	"strconv"
@@ -132,14 +133,22 @@ func (ps *productService) Import(ctx context.Context, fileHeader *multipart.File
 		}
 
 		if len(picture) > 0 {
-			url, err := ps.processExcelPicture(picture[0], productCode)
+			sortOrder := col - len(rows[row-1]) - 1
+
+			url, err := utils.ProcessExcelPicture(
+				ps.imgUtil,
+				picture[0],
+				[]string{"uploads", "products"},
+				productCode,
+				sortOrder,
+			)
 			if err != nil {
 				continue
 			}
 			imageURLs = append(imageURLs, &model.ProductImage{
 				ProductCode: productCode,
 				// 排序,用于显示顺序
-				SortOrder: col - len(rows[row-1]) - 1,
+				SortOrder: sortOrder,
 				ImageURL:  url,
 			})
 		}

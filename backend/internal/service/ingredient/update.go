@@ -5,24 +5,58 @@ import (
 	"fmt"
 	"go-cookbook/internal/dto"
 	"go-cookbook/internal/model"
+	"go-cookbook/internal/utils"
+	"mime/multipart"
 
 	"github.com/LouYuanbo1/go-webservice/gormx/options"
 )
 
 func (is *ingredientService) Update(ctx context.Context, req *dto.UpdateIngredientRequest) error {
-	savedNewImages := make(map[string]string) // tempID -> url
+	tempIDToFileHeader := make(map[string]*multipart.FileHeader) // tempID -> fileHeader
 	for _, img := range req.NewImages {
-		fmt.Printf("NewImages: %v\n", img)
-		url, err := is.processImage(img.File, req.IngredientCode)
-		if err != nil {
-			return fmt.Errorf("处理新图片失败: %w", err)
+		tempIDToFileHeader[img.TempID] = img.File
+	}
+
+	deletedImages := make([]uint64, 0)
+	upsertImages := make([]*model.IngredientImage, 0)
+	// 删除标记为deleted的图片
+	for _, img := range req.Images {
+		switch img.Type {
+		case "deleted":
+			deletedImages = append(deletedImages, img.ID)
+		case "existing":
+			upsertImages = append(upsertImages, &model.IngredientImage{
+				ID:             img.ID,
+				IngredientCode: req.IngredientCode,
+				// 排序,用于显示顺序
+				SortOrder: img.SortOrder,
+			})
+		case "new":
+			fmt.Println("New Image:", img.TempID)
+			url, err := utils.ProcessImageFileHeader(
+				is.imgUtil,
+				tempIDToFileHeader[img.TempID],
+				[]string{"uploads", "ingredients"},
+				req.IngredientCode,
+				img.SortOrder,
+			)
+			if err != nil {
+				return fmt.Errorf("处理新图片失败: %w", err)
+			}
+			fmt.Printf("TempID: %s, URL: %s", img.TempID, url)
+			upsertImages = append(upsertImages, &model.IngredientImage{
+				IngredientCode: req.IngredientCode,
+				ImageURL:       url,
+				// 排序,用于显示顺序
+				SortOrder: img.SortOrder,
+			})
+		default:
+			return fmt.Errorf("未知图片操作类型: %s", img.Type)
 		}
-		fmt.Printf("TempID: %s, URL: %s\n", img.TempID, url)
-		savedNewImages[img.TempID] = url
 	}
 
 	err := is.repoFactory.Tx().Exec(ctx, func(ctx context.Context) error {
-
+		//第一步:更新食材基本信息
 		is.repoFactory.Ingredient().UpdateByStructFilter(ctx, &model.Ingredient{
 			IngredientCode: req.IngredientCode,
 		}, &model.Ingredient{
@@ -30,39 +64,7 @@ func (is *ingredientService) Update(ctx context.Context, req *dto.UpdateIngredie
 			Description: req.Description,
 		})
 
-		deletedImages := make([]uint64, 0)
-
-		upsertImages := make([]*model.IngredientImage, 0)
-
-		//fmt.Printf("req.Images: %v\n", req.Images)
-
-		// 删除标记为deleted的图片
-		for _, img := range req.Images {
-			switch img.Type {
-			case "deleted":
-				deletedImages = append(deletedImages, img.ID)
-			case "existing":
-				upsertImages = append(upsertImages, &model.IngredientImage{
-					ID: img.ID,
-					// 排序,用于显示顺序
-					SortOrder: img.SortOrder,
-				})
-			case "new":
-				fmt.Println("New Image:", img.TempID)
-				url, exists := savedNewImages[img.TempID]
-				fmt.Printf("TempID: %s, URL: %s, Exists: %v\n", img.TempID, url, exists)
-				if exists {
-					upsertImages = append(upsertImages, &model.IngredientImage{
-						IngredientCode: req.IngredientCode,
-						ImageURL:       url,
-						// 排序,用于显示顺序
-						SortOrder: img.SortOrder,
-					})
-				}
-			default:
-				return fmt.Errorf("未知图片操作类型: %s", img.Type)
-			}
-		}
+		fmt.Printf("deletedImages: %v\n", deletedImages)
 
 		if len(deletedImages) > 0 {
 			// 第二步：删除图片

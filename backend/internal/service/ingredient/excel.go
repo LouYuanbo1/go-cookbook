@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go-cookbook/internal/model"
+	"go-cookbook/internal/utils"
 	"log"
 	"mime/multipart"
 
@@ -119,7 +120,15 @@ func (is *ingredientService) Import(ctx context.Context, fileHeader *multipart.F
 		}
 
 		if len(picture) > 0 {
-			url, err := is.processExcelPicture(picture[0], ingredientCode)
+			sortOrder := col - len(rows[row-1]) - 1
+
+			url, err := utils.ProcessExcelPicture(
+				is.imgUtil,
+				picture[0],
+				[]string{"uploads", "ingredients"},
+				ingredientCode,
+				sortOrder,
+			)
 			if err != nil {
 				continue
 			}
@@ -127,7 +136,7 @@ func (is *ingredientService) Import(ctx context.Context, fileHeader *multipart.F
 			imageURLs = append(imageURLs, &model.IngredientImage{
 				IngredientCode: ingredientCode,
 				// 排序,用于显示顺序
-				SortOrder: col - len(rows[row-1]) - 1,
+				SortOrder: sortOrder,
 				ImageURL:  url,
 			})
 		}

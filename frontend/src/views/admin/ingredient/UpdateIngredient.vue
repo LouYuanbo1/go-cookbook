@@ -268,6 +268,8 @@ const fetchIngredientDetail = async (code: string) => {
     });
     const data = res.data;
 
+    console.log("查询到的食材详情:", data);
+
     // 填充表单
     form.ingredientCode = data.ingredientCode;
     form.name = data.name;
@@ -356,7 +358,12 @@ const handleSubmit = async () => {
     }
   });
 
+
+  console.log("删除图片ID列表:", deletedImageIds.value);
+
+
   deletedImageIds.value.forEach(id => {
+    console.log("删除图片ID:", id);
     imageRequests.push({
       type: 'deleted',
       id,
