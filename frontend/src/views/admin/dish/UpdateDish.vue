@@ -1,4 +1,17 @@
 <template>
+  <div class="top-nav">
+    <router-link :to="{ name: 'AdminDashboard' }" class="nav-item">管理员工具栏</router-link>
+    <router-link :to="{ name: 'CreateIngredient' }" class="nav-item">创建食材</router-link>
+    <router-link :to="{ name: 'UpdateIngredient' }" class="nav-item">更新食材</router-link>
+    <router-link :to="{ name: 'DeleteIngredient' }" class="nav-item">删除食材</router-link>
+    <router-link :to="{ name: 'CreateProduct' }" class="nav-item">创建产品</router-link>
+    <router-link :to="{ name: 'UpdateProduct' }" class="nav-item">更新产品</router-link>
+    <router-link :to="{ name: 'DeleteProduct' }" class="nav-item">删除产品</router-link>
+    <router-link :to="{ name: 'CreateDish' }" class="nav-item">创建菜品</router-link>
+    <router-link :to="{ name: 'UpdateDish' }" class="nav-item">更新菜品</router-link>
+    <router-link :to="{ name: 'DeleteDish' }" class="nav-item">删除菜品</router-link>
+  </div>
+
   <div class="dish-container">
     <!-- 提交时的加载状态 -->
     <div v-if="submitting" class="loading-overlay">
@@ -652,6 +665,35 @@ watch(isEditLocked, (locked) => {
 </script>
 
 <style scoped>
+.top-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  background-color: #ffffff;
+  padding: 12px 24px;
+  margin: 20px 24px 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-item {
+  padding: 8px 16px;
+  color: #2c3e50;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.nav-item:hover {
+  background-color: #f5f7fa;
+  color: #409eff;
+  transform: translateY(-1px);
+}
 /* ========== 继承创建表单的精美样式 ========== */
 .dish-container {
   font-family: "PingFang SC", "Helvetica Neue", Arial, sans-serif;

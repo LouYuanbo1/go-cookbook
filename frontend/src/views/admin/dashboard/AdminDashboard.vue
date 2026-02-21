@@ -1,6 +1,6 @@
 <template>
   <div class="top-nav">
-    <router-link :to="{ name: 'Home' }" class="nav-item">首页</router-link>
+    <router-link :to="{ name: 'AdminDashboard' }" class="nav-item">管理员工具栏</router-link>
     <router-link :to="{ name: 'CreateIngredient' }" class="nav-item">创建食材</router-link>
     <router-link :to="{ name: 'UpdateIngredient' }" class="nav-item">更新食材</router-link>
     <router-link :to="{ name: 'DeleteIngredient' }" class="nav-item">删除食材</router-link>
@@ -245,6 +245,7 @@ const closeQRModal = () => {
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   align-items: center;
+  justify-content: center;
 }
 
 .nav-item {
