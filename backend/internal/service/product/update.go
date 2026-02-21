@@ -12,6 +12,9 @@ import (
 )
 
 func (ps *productService) Update(ctx context.Context, req *dto.UpdateProductRequest) error {
+
+	fmt.Printf("UpdateProductRequest: %v\n", req)
+
 	tempIDToFileHeader := make(map[string]*multipart.FileHeader) // tempID -> fileHeader
 	for _, img := range req.NewImages {
 		tempIDToFileHeader[img.TempID] = img.File
@@ -27,8 +30,15 @@ func (ps *productService) Update(ctx context.Context, req *dto.UpdateProductRequ
 			deletedImages = append(deletedImages, img.ID)
 		case "existing":
 			upsertImages = append(upsertImages, &model.ProductImage{
-				ID:        img.ID,
-				SortOrder: img.SortOrder,
+				ID:          img.ID,
+				ProductCode: req.ProductCode,
+				SortOrder:   img.SortOrder,
+			})
+			ps.repoFactory.ProductImage().UpdateByStructFilter(ctx, &model.ProductImage{
+				ID: img.ID,
+			}, &model.ProductImage{
+				//使用负顺序,避免唯一约束影响调换顺序
+				SortOrder: -img.SortOrder,
 			})
 		case "new":
 			fmt.Println("New Image:", img.TempID)
@@ -65,12 +75,16 @@ func (ps *productService) Update(ctx context.Context, req *dto.UpdateProductRequ
 			AllergenType:   req.AllergenType,
 		})
 
+		fmt.Printf("DeletedImages: %v\n", deletedImages)
+
 		// 第二步：删除图片
 		if len(deletedImages) > 0 {
 			if err := ps.repoFactory.ProductImage().DeleteByIDs(ctx, deletedImages); err != nil {
 				return fmt.Errorf("删除产品图片关系失败: %w", err)
 			}
 		}
+
+		fmt.Printf("UpsertImages: %v\n", upsertImages)
 
 		// 第三步：更新或插入图片关系
 		if len(upsertImages) > 0 {

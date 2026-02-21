@@ -56,11 +56,13 @@
           <div class="selected-ingredient" v-if="selectedIngredientCode">
             <span class="selected-label">当前食材：</span>
             <span class="selected-value">{{ selectedIngredientCode }}</span>
+
+            <!-- :disabled="isEditLocked && !editingIngredient" -->
             <button
               type="button"
               class="btn btn-outline btn-sm"
               @click="openIngredientPicker"
-              :disabled="isEditLocked && !editingIngredient"
+              :disabled="submitting"
             >
               更换食材
             </button>
@@ -318,7 +320,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue';
-import { useRouter } from 'vue-router';
+//import { useRouter } from 'vue-router';
 import request from '../../../api/request';
 import ScrollPicker, { type FetchResult } from '../../../components/picker/ScrollPicker.vue';
 import ImageManager, { type ImageItem } from '../../../components/image/ImageManager.vue';
@@ -385,7 +387,7 @@ const showProductPicker = ref(false);
 const ingredientPickerRef = ref<InstanceType<typeof ScrollPicker> | null>(null);
 const productPickerRef = ref<InstanceType<typeof ScrollPicker> | null>(null);
 
-const router = useRouter();
+//const router = useRouter();
 
 // ---------- 表单校验 ----------
 const formErrors = reactive({
@@ -650,10 +652,10 @@ const handleSubmit = async () => {
   });
 
   imageRequests.forEach((req,index) =>{
-    formData.append(`images[${index}][type]`, req.type);
-    formData.append(`images[${index}][id]`, req.id.toString());
-    formData.append(`images[${index}][tempID]`, req.tempID || '');
-    formData.append(`images[${index}][sortOrder]`, req.sortOrder.toString());
+    formData.append(`images[${index}].type`, req.type);
+    formData.append(`images[${index}].id`, req.id.toString());
+    formData.append(`images[${index}].tempID`, req.tempID || '');
+    formData.append(`images[${index}].sortOrder`, req.sortOrder.toString());
   })
 
   /*
@@ -683,7 +685,7 @@ const handleSubmit = async () => {
     showSuccessToast.value = true;
     setTimeout(() => {
       showSuccessToast.value = false;
-      router.push('/products'); // 提交后跳转到商品列表
+      //router.push('/products'); // 提交后跳转到商品列表
     }, 1500);
   } catch (error) {
     console.error('更新商品失败:', error);

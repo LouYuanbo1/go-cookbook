@@ -31,6 +31,12 @@ func (is *ingredientService) Update(ctx context.Context, req *dto.UpdateIngredie
 				// 排序,用于显示顺序
 				SortOrder: img.SortOrder,
 			})
+			is.repoFactory.IngredientImage().UpdateByStructFilter(ctx, &model.IngredientImage{
+				ID: img.ID,
+			}, &model.IngredientImage{
+				//使用负顺序,避免唯一约束影响调换顺序
+				SortOrder: -img.SortOrder,
+			})
 		case "new":
 			fmt.Println("New Image:", img.TempID)
 			url, err := utils.ProcessImageFileHeader(
