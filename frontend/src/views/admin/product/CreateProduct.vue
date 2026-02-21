@@ -439,6 +439,27 @@ const handleIngredientSelected = (item: any) => {
   closeIngredientPicker();
 };
 
+
+const resetForm = () => {
+  form.productCode = '';
+  form.ingredientCode = '';
+  form.name = '';
+  form.amount = null;
+  form.unit = '';
+  form.description = '';
+  form.price = null;
+  form.allergenType = '';
+  imageList.value = [];
+  formErrors.productCode = '';
+  formErrors.ingredientCode = '';
+  formErrors.name = '';
+  formErrors.amount = '';
+  formErrors.unit = '';
+  formErrors.price = '';
+  formErrors.allergenType = '';
+};
+
+
 // ---------- 表单提交 ----------
 const handleSubmit = async () => {
   if (!isFormValid.value) return;
@@ -473,12 +494,12 @@ const handleSubmit = async () => {
     });
 
     showSuccessToast.value = true;
-    /*
     setTimeout(() => {
       showSuccessToast.value = false;
-      router.push('/products'); // 跳转到商品榜单列表页
+      //router.push('/products'); // 跳转到商品榜单列表页
+      // 提交成功后重置表单
+      resetForm();
     }, 1500);
-    */
   } catch (error) {
     console.error('发布商品失败:', error);
     alert('发布失败，请稍后重试');

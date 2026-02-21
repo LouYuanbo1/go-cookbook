@@ -175,6 +175,17 @@ watch(
   { immediate: true }
 );
 
+//重置表单,在提交成功后调用
+const resetForm = () => {
+  form.ingredientCode = '';
+  form.name = '';
+  form.description = '';
+  imageList.value = [];
+  formErrors.ingredientCode = '';
+  formErrors.name = '';
+};
+
+
 // ---------- 表单提交 ----------
 const handleSubmit = async () => {
   if (!isFormValid.value) return;
@@ -207,6 +218,8 @@ const handleSubmit = async () => {
     setTimeout(() => {
       showSuccessToast.value = false;
       //router.push('/ingredients');
+      // 提交成功后重置表单
+      resetForm();
     }, 1500);
   } catch (error) {
     console.error('创建食材失败:', error);
