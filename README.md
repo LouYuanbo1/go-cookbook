@@ -259,5 +259,5 @@ MIT License
 
 ## 备注
 - 项目中使用了封装库 `github.com/LouYuanbo1/go-webservice` 来加快开发速度。
-链接：[go-webservice](https://github.com/LouYuanbo1/go-webservice)
+链接：[go-webservice](https://github.com/LouYuanbo1/go-webservice)。
 欢迎使用这个封装库,并为其添加star,支持作者的创作,并提出宝贵的建议和问题。
