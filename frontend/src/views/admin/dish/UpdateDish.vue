@@ -301,7 +301,7 @@ import ImageManager from '../../../components/image/ImageManager.vue';
 import ScrollPicker from '../../../components/picker/ScrollPicker.vue';
 import type { ImageItem } from '../../../components/image/ImageManager.vue';
 import type { FetchResult } from '../../../components/picker/ScrollPicker.vue';
-import type { ImageResponse, ViewIngredientCard, ViewIngredientCardListWithCursor,ViewDishIngredientCard, ViewDishIngredientCardListWithCursor,ViewDishCard, ViewDishCardListWithCursor } from '../../../types/types';
+import type { ImageRequest,ImageResponse, ViewIngredientCard, ViewIngredientCardListWithCursor,ViewDishIngredientCard, ViewDishIngredientCardListWithCursor,ViewDishCard, ViewDishCardListWithCursor } from '../../../types/types';
 import { v7 as uuidv7 } from 'uuid';
 
 // ---------- 类型定义 ----------
@@ -552,7 +552,7 @@ const handleSubmit = async () => {
 
   // ===== 构建图片数据 =====
   const newImageFiles: { tempID: string; file: File }[] = [];
-  const imageRequests: any[] = [];
+  const imageRequests: ImageRequest[] = [];
 
   imageList.value.forEach((img, idx) => {
     if (img.status === 'existing' && img.id) {
