@@ -42,9 +42,16 @@ func (ds *dishService) Update(ctx context.Context, req *dto.UpdateDishRequest) e
 			deletedImages = append(deletedImages, img.ID)
 		case "existing":
 			upsertImages = append(upsertImages, &model.DishImage{
-				ID: img.ID,
+				ID:       img.ID,
+				DishCode: req.DishCode,
 				// 排序,用于显示顺序
 				SortOrder: img.SortOrder,
+			})
+			ds.repoFactory.DishImage().UpdateByStructFilter(ctx, &model.DishImage{
+				ID: img.ID,
+			}, &model.DishImage{
+				//使用负顺序,避免唯一约束影响调换顺序
+				SortOrder: -img.SortOrder,
 			})
 		case "new":
 			url, err := utils.ProcessImageFileHeader(

@@ -7,9 +7,9 @@
     <router-link :to="{ name: 'CreateProduct' }" class="nav-item">创建产品</router-link>
     <router-link :to="{ name: 'UpdateProduct' }" class="nav-item">更新产品</router-link>
     <router-link :to="{ name: 'DeleteProduct' }" class="nav-item">删除产品</router-link>
-    <router-link :to="{ name: 'CreateDish' }" class="nav-item">创建菜单</router-link>
-    <router-link :to="{ name: 'UpdateDish' }" class="nav-item">更新菜单</router-link>
-    <router-link :to="{ name: 'DeleteDish' }" class="nav-item">删除菜单</router-link>
+    <router-link :to="{ name: 'CreateDish' }" class="nav-item">创建菜品</router-link>
+    <router-link :to="{ name: 'UpdateDish' }" class="nav-item">更新菜品</router-link>
+    <router-link :to="{ name: 'DeleteDish' }" class="nav-item">删除菜品</router-link>
   </div>
   <div class="util-btn">
     <div class="button-group">
@@ -43,7 +43,7 @@
         @click="handleExport('dishes')"
       >
         <span v-if="loading && currentType === 'dishes'" class="spinner"></span>
-        {{ loading && currentType === 'dishes' ? '导出中...' : '导出菜单' }}
+        {{ loading && currentType === 'dishes' ? '导出中...' : '导出菜品' }}
       </button>
       <p v-if="error && currentType === 'dishes'" class="error">{{ error }}</p>
     </div>
