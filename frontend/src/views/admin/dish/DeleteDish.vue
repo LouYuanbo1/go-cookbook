@@ -408,6 +408,8 @@ const handleDelete = async () => {
     setTimeout(() => {
       showSuccessToast.value = false;
       //router.push('/dishes');
+      // 删除成功后重置表单
+      resetForm();
     }, 1500);
   } catch (error) {
     console.error('删除菜品失败:', error);

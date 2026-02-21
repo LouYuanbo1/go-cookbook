@@ -553,6 +553,8 @@ const handleDelete = async () => {
     setTimeout(() => {
       showSuccessToast.value = false;
       //router.push('/products'); // 删除后跳转到商品列表
+      // 删除成功后重置表单
+      resetForm();
     }, 1500);
   } catch (error) {
     console.error('删除商品失败:', error);

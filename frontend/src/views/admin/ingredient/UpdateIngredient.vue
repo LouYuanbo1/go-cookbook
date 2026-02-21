@@ -412,6 +412,8 @@ const handleSubmit = async () => {
     setTimeout(() => {
       showSuccessToast.value = false;
       // router.push('/ingredients'); // 按需开启
+      // 更新成功后重置表单
+      resetForm();
     }, 1500);
   } catch (error) {
     console.error('更新食材失败:', error);

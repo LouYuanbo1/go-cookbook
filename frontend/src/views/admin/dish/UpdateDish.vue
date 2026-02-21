@@ -646,7 +646,9 @@ const handleSubmit = async () => {
     showSuccessToast.value = true;
     setTimeout(() => {
       showSuccessToast.value = false;
-     //router.push('/dishes'); // 跳转到菜品列表
+      //router.push('/dishes'); // 跳转到菜品列表
+      // 更新成功后重置表单
+      resetForm();
     }, 1500);
   } catch (error) {
     console.error('更新菜品失败:', error);

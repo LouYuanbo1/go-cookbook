@@ -372,6 +372,19 @@ const removeIngredient = (index: number) => {
   selectedIngredients.value.splice(index, 1);
 };
 
+
+const resetForm = () => {
+  form.dishCode = '';
+  form.name = '';
+  form.description = '';
+  form.recipe = '';
+  imageList.value = [];
+  selectedIngredients.value = [];
+  formErrors.dishCode = '';
+  formErrors.name = '';
+};
+
+
 // ---------- 表单提交 ----------
 const handleSubmit = async () => {
   if (!isFormValid.value) return;
@@ -416,8 +429,9 @@ const handleSubmit = async () => {
     setTimeout(() => {
       showSuccessToast.value = false;
       //router.push('/dishes');
+      // 创建成功后重置表单
+      resetForm();
     }, 1500);
-
   } catch (error) {
     console.error('创建菜品失败:', error);
     alert('创建失败，请稍后重试');

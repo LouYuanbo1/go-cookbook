@@ -699,6 +699,8 @@ const handleSubmit = async () => {
     setTimeout(() => {
       showSuccessToast.value = false;
       //router.push('/products'); // 提交后跳转到商品列表
+      // 更新成功后重置表单
+      resetForm();
     }, 1500);
   } catch (error) {
     console.error('更新商品失败:', error);
