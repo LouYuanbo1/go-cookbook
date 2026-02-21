@@ -211,7 +211,16 @@ func (ps *productService) Export(gctx *gin.Context, batchSize int) error {
 	err = ps.repoFactory.Product().FindInBatches(ctx, batchSize, func(ctx context.Context, batch int, ptrModels []*model.Product) error {
 		for _, product := range ptrModels {
 			// 构造一行数据（必须与表头列数一致）
-			row := []any{product.ProductCode, product.IngredientCode, product.Name, product.Amount, product.Unit, product.Description, product.Price, product.AllergenType}
+			row := []any{
+				product.ProductCode,
+				product.IngredientCode,
+				product.Name,
+				product.Amount,
+				product.Unit,
+				product.Description,
+				product.Price,
+				product.AllergenType,
+			}
 			// 计算单元格坐标，例如 A2, B2, ... 然后下一行 A3...
 			cell, err := excelize.CoordinatesToCellName(1, currentRow) // 1 表示第 A 列
 			if err != nil {
