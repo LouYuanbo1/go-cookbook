@@ -302,7 +302,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue';
-import { useRouter } from 'vue-router';
+//import { useRouter } from 'vue-router';
 import request from '../../../api/request';
 import ScrollPicker, { type FetchResult } from '../../../components/picker/ScrollPicker.vue';
 import { type ImageItem } from '../../../components/image/ImageManager.vue'; // 仅保留类型，组件已移除
@@ -369,7 +369,7 @@ const showProductPicker = ref(false);
 const ingredientPickerRef = ref<InstanceType<typeof ScrollPicker> | null>(null);
 const productPickerRef = ref<InstanceType<typeof ScrollPicker> | null>(null);
 
-const router = useRouter();
+//const router = useRouter();
 
 // ---------- 删除按钮有效性：只需商品编码存在 ----------
 const isDeleteValid = computed(() => {
@@ -539,7 +539,7 @@ const handleDelete = async () => {
     showSuccessToast.value = true;
     setTimeout(() => {
       showSuccessToast.value = false;
-      router.push('/products'); // 删除后跳转到商品列表
+      //router.push('/products'); // 删除后跳转到商品列表
     }, 1500);
   } catch (error) {
     console.error('删除商品失败:', error);

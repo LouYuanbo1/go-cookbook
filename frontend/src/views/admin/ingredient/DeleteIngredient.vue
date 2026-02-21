@@ -163,13 +163,13 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
-import { useRouter } from 'vue-router';
+//import { useRouter } from 'vue-router';
 import request from '../../../api/request';
 import ScrollPicker from '../../../components/picker/ScrollPicker.vue';
 import type { FetchResult } from '../../../components/picker/ScrollPicker.vue';
 import type { ImageResponse, ViewIngredientCard, ViewIngredientCardListWithCursor } from '../../../types/types';
 
-const router = useRouter();
+//const router = useRouter();
 
 // ---------- 表单状态 ----------
 const form = reactive({
@@ -296,7 +296,7 @@ const handleDelete = async () => {
     showSuccessToast.value = true;
     setTimeout(() => {
       showSuccessToast.value = false;
-      router.push('/ingredients'); // 删除后跳转到列表页
+      //router.push('/ingredients'); // 删除后跳转到列表页
     }, 1500);
   } catch (error) {
     console.error('删除食材失败:', error);

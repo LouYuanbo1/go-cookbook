@@ -217,7 +217,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue';
-import { useRouter } from 'vue-router';
+//import { useRouter } from 'vue-router';
 import request from '../../../api/request';
 import ScrollPicker from '../../../components/picker/ScrollPicker.vue';
 import type { FetchResult } from '../../../components/picker/ScrollPicker.vue';
@@ -261,7 +261,7 @@ const searchError = ref('');
 const showDishPicker = ref(false);
 const dishScrollPickerRef = ref<InstanceType<typeof ScrollPicker> | null>(null);
 
-const router = useRouter();
+//const router = useRouter();
 
 // ---------- 删除按钮有效性：只需菜品编码存在 ----------
 const isDeleteValid = computed(() => form.dishCode.trim() !== '');
@@ -394,7 +394,7 @@ const handleDelete = async () => {
     showSuccessToast.value = true;
     setTimeout(() => {
       showSuccessToast.value = false;
-      router.push('/dishes');
+      //router.push('/dishes');
     }, 1500);
   } catch (error) {
     console.error('删除菜品失败:', error);
