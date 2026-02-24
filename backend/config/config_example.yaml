@@ -15,12 +15,12 @@ db:
     sslmode: "disable"
 auth:
   crypt_util:
-    default_cost: 10
+    cost: 10
   password: "your_password"
   secret_key: "your_secret_key"
   token_expire: 24
 img_util:
-  default_width: 800
-  default_height: 600
-  default_quality: 80
-  default_storage_dir: "uploads/"
+  width: 800
+  height: 600
+  quality: 80
+  storage_dir: "uploads/"
