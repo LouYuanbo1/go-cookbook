@@ -56,7 +56,7 @@ func (ps *productService) Import(ctx context.Context, fileHeader *multipart.File
 
 			if err := ps.repoFactory.Product().CreateInBatches(ctx, products, batchSize,
 				options.OnConstraintColumns("product_code"),
-				options.UpdateAllOption(),
+				options.UpdateAll(),
 			); err != nil {
 				return fmt.Errorf("创建产品失败: %w", err)
 			}
@@ -104,7 +104,7 @@ func (ps *productService) Import(ctx context.Context, fileHeader *multipart.File
 			fmt.Printf("已处理 %d 图片，准备提交事务...\n", i)
 			if err := ps.repoFactory.ProductImage().CreateInBatches(ctx, imageURLs, batchSize,
 				options.OnConstraintColumns("product_code", "sort_order"),
-				options.UpdateAllOption(),
+				options.UpdateAll(),
 			); err != nil {
 				return fmt.Errorf("创建产品图片关系失败: %w", err)
 			}
@@ -160,7 +160,7 @@ func (ps *productService) Import(ctx context.Context, fileHeader *multipart.File
 			if len(products) > 0 {
 				if err := ps.repoFactory.Product().CreateInBatches(ctx, products, batchSize,
 					options.OnConstraintColumns("product_code"),
-					options.UpdateAllOption(),
+					options.UpdateAll(),
 				); err != nil {
 					return fmt.Errorf("创建产品失败: %w", err)
 				}
@@ -170,7 +170,7 @@ func (ps *productService) Import(ctx context.Context, fileHeader *multipart.File
 
 				if err := ps.repoFactory.ProductImage().CreateInBatches(ctx, imageURLs, batchSize,
 					options.OnConstraintColumns("product_code", "sort_order"),
-					options.UpdateAllOption(),
+					options.UpdateAll(),
 				); err != nil {
 					return fmt.Errorf("创建产品图片关系失败: %w", err)
 				}

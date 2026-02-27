@@ -59,7 +59,7 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 				if len(dishes) > 0 {
 					if err := ds.repoFactory.Dish().CreateInBatches(ctx, dishes, batchSize,
 						options.OnConstraintColumns("dish_code"),
-						options.UpdateAllOption(),
+						options.UpdateAll(),
 					); err != nil {
 						return fmt.Errorf("创建产品失败: %w", err)
 					}
@@ -68,7 +68,7 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 				if len(dishIngredients) > 0 {
 					if err := ds.repoFactory.DishIngredient().CreateInBatches(ctx, dishIngredients, batchSize,
 						options.OnConstraintColumns("dish_code", "ingredient_code"),
-						options.UpdateAllOption(),
+						options.UpdateAll(),
 					); err != nil {
 						return fmt.Errorf("创建产品失败: %w", err)
 					}
@@ -125,7 +125,7 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 
 				if err := ds.repoFactory.DishImage().CreateInBatches(ctx, imageURLs, batchSize,
 					options.OnConstraintColumns("dish_code", "sort_order"),
-					options.UpdateAllOption(),
+					options.UpdateAll(),
 				); err != nil {
 					return fmt.Errorf("创建产品图片关系失败: %w", err)
 				}
@@ -184,7 +184,7 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 				if len(dishes) > 0 {
 					if err := ds.repoFactory.Dish().CreateInBatches(ctx, dishes, batchSize,
 						options.OnConstraintColumns("dish_code"),
-						options.UpdateAllOption(),
+						options.UpdateAll(),
 					); err != nil {
 						return fmt.Errorf("创建产品失败: %w", err)
 					}
@@ -193,7 +193,7 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 				if len(dishIngredients) > 0 {
 					if err := ds.repoFactory.DishIngredient().CreateInBatches(ctx, dishIngredients, batchSize,
 						options.OnConstraintColumns("dish_code", "ingredient_code"),
-						options.UpdateAllOption(),
+						options.UpdateAll(),
 					); err != nil {
 						return fmt.Errorf("创建产品失败: %w", err)
 					}
@@ -203,7 +203,7 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 
 					if err := ds.repoFactory.DishImage().CreateInBatches(ctx, imageURLs, batchSize,
 						options.OnConstraintColumns("dish_code", "sort_order"),
-						options.UpdateAllOption(),
+						options.UpdateAll(),
 					); err != nil {
 						return fmt.Errorf("创建产品图片关系失败: %w", err)
 					}

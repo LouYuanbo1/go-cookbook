@@ -20,7 +20,9 @@ auth:
   secret_key: "your_secret_key"
   token_expire: 24
 img_util:
-  width: 800
-  height: 600
-  quality: 80
-  storage_dir: "uploads/"
+  transform:
+    width: 800
+    height: 600
+  save:
+    quality: 80
+    storage_dir: "uploads/"

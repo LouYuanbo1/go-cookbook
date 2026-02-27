@@ -131,7 +131,7 @@ func (ds *dishService) Update(ctx context.Context, req *dto.UpdateDishRequest) e
 			upsertImages,
 			10,
 			options.OnConstraintColumns("id"),
-			options.UpdateColumnsOption("sort_order"),
+			options.UpdateColumns("sort_order"),
 		); err != nil {
 			return fmt.Errorf("创建新图片失败: %w", err)
 		}
@@ -142,7 +142,7 @@ func (ds *dishService) Update(ctx context.Context, req *dto.UpdateDishRequest) e
 			upsertIngredients,
 			10,
 			options.OnConstraintColumns("dish_code", "ingredient_code"),
-			options.UpdateColumnsOption("quantity", "note"),
+			options.UpdateColumns("quantity", "note"),
 		); err != nil {
 			return fmt.Errorf("创建新食材失败: %w", err)
 		}

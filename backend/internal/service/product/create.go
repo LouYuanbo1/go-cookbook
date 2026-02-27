@@ -45,14 +45,14 @@ func (ps *productService) Create(ctx context.Context, req *dto.CreateProductRequ
 			AllergenType:   req.AllergenType,
 		},
 			options.OnConstraintColumns("product_code"),
-			options.UpdateAllOption(),
+			options.UpdateAll(),
 		); err != nil {
 			return fmt.Errorf("创建产品失败: %w", err)
 		}
 		// 第二步：创建产品图片关系
 		if err := ps.repoFactory.ProductImage().CreateInBatches(ctx, imageURLs, 10,
 			options.OnConstraintColumns("product_code", "sort_order"),
-			options.UpdateAllOption(),
+			options.UpdateAll(),
 		); err != nil {
 			return fmt.Errorf("创建产品图片关系失败: %w", err)
 		}

@@ -24,7 +24,7 @@ func (is *ingredientService) GetByCode(ctx context.Context, code string) (*dto.V
 	images, err := is.repoFactory.IngredientImage().FindByStructFilter(
 		ctx,
 		&model.IngredientImage{IngredientCode: code},
-		options.WithAscOption("order"),
+		options.WithAsc("order"),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("查询产品图片关系失败: %w", err)
