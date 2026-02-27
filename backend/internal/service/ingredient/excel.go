@@ -55,7 +55,7 @@ func (is *ingredientService) Import(ctx context.Context, fileHeader *multipart.F
 
 			if err := is.repoFactory.Ingredient().CreateInBatches(ctx, ingredients, batchSize,
 				options.OnConstraintColumns("ingredient_code"),
-				options.UpdateAllOption(),
+				options.UpdateAll(),
 			); err != nil {
 				return fmt.Errorf("创建产品失败: %w", err)
 			}
@@ -90,7 +90,7 @@ func (is *ingredientService) Import(ctx context.Context, fileHeader *multipart.F
 
 			if err := is.repoFactory.IngredientImage().CreateInBatches(ctx, imageURLs, batchSize,
 				options.OnConstraintColumns("ingredient_code", "sort_order"),
-				options.UpdateAllOption(),
+				options.UpdateAll(),
 			); err != nil {
 				return fmt.Errorf("创建产品图片关系失败: %w", err)
 			}
@@ -149,7 +149,7 @@ func (is *ingredientService) Import(ctx context.Context, fileHeader *multipart.F
 			if len(ingredients) > 0 {
 				if err := is.repoFactory.Ingredient().CreateInBatches(ctx, ingredients, batchSize,
 					options.OnConstraintColumns("ingredient_code"),
-					options.UpdateAllOption(),
+					options.UpdateAll(),
 				); err != nil {
 					return fmt.Errorf("创建产品失败: %w", err)
 				}
@@ -159,7 +159,7 @@ func (is *ingredientService) Import(ctx context.Context, fileHeader *multipart.F
 
 				if err := is.repoFactory.IngredientImage().CreateInBatches(ctx, imageURLs, batchSize,
 					options.OnConstraintColumns("ingredient_code", "sort_order"),
-					options.UpdateAllOption(),
+					options.UpdateAll(),
 				); err != nil {
 					return fmt.Errorf("创建产品图片关系失败: %w", err)
 				}

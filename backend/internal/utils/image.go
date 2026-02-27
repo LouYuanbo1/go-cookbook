@@ -99,7 +99,7 @@ func ProcessImageFileHeader(imgUtil imgutil.ImgUtil, fileHeader *multipart.FileH
 	//filename = imgUtil.WithUnixNanoTimestamp(filename)
 	// 保存图片到临时文件
 	//在保存图片时，如果指定的文件名已经存在，会直接覆盖原有文件,这是我们想要的
-	err = imgUtil.Save(img, filename, options.WithStorageDirOption(dir), options.WithQualityOption(80))
+	err = imgUtil.Save(img, filename, options.WithStorageDir(dir), options.WithQuality(80))
 	if err != nil {
 		return "", fmt.Errorf("error saving image: %w", err)
 	}
@@ -146,7 +146,7 @@ func ProcessExcelPicture(imgUtil imgutil.ImgUtil, picture excelize.Picture, dirE
 	filename = fmt.Sprintf("%s_%d.jpg", filename, sortID)
 	//filename = imgUtil.WithUnixNanoTimestamp(filename)
 	// 保存图片到临时文件
-	err = imgUtil.Save(img, filename, options.WithStorageDirOption(dir), options.WithQualityOption(80))
+	err = imgUtil.Save(img, filename, options.WithStorageDir(dir), options.WithQuality(80))
 	if err != nil {
 		return "", fmt.Errorf("error saving image: %w", err)
 	}

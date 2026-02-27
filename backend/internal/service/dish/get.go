@@ -22,7 +22,7 @@ func (ds *dishService) GetByCode(ctx context.Context, code string) (*dto.ViewDis
 		Recipe:      dish.Recipe,
 	}
 
-	images, err := ds.repoFactory.DishImage().FindByStructFilter(ctx, &model.DishImage{DishCode: code}, options.WithAscOption("order"))
+	images, err := ds.repoFactory.DishImage().FindByStructFilter(ctx, &model.DishImage{DishCode: code}, options.WithAsc("order"))
 	if err != nil {
 		return nil, fmt.Errorf("查询菜品图片关系失败: %w", err)
 	}

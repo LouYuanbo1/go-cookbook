@@ -40,14 +40,14 @@ func (ds *dishService) Create(ctx context.Context, req *dto.CreateDishRequest) e
 			Recipe:      req.Recipe,
 		},
 			options.OnConstraintColumns("dish_code"),
-			options.UpdateAllOption(),
+			options.UpdateAll(),
 		); err != nil {
 			return fmt.Errorf("创建菜品失败: %w", err)
 		}
 		// 第二步：创建菜品图片
 		if err := ds.repoFactory.DishImage().CreateInBatches(ctx, imageURLs, 10,
 			options.OnConstraintColumns("dish_code", "sort_order"),
-			options.UpdateAllOption(),
+			options.UpdateAll(),
 		); err != nil {
 			return fmt.Errorf("创建菜品图片关系失败: %w", err)
 		}
@@ -65,7 +65,7 @@ func (ds *dishService) Create(ctx context.Context, req *dto.CreateDishRequest) e
 
 		if err := ds.repoFactory.DishIngredient().CreateInBatches(ctx, ingredients, 10,
 			options.OnConstraintColumns("dish_code", "ingredient_code"),
-			options.UpdateAllOption(),
+			options.UpdateAll(),
 		); err != nil {
 			return fmt.Errorf("创建菜品食材关系失败: %w", err)
 		}

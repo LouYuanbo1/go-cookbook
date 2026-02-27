@@ -88,7 +88,7 @@ func (is *ingredientService) Update(ctx context.Context, req *dto.UpdateIngredie
 				upsertImages,
 				10,
 				options.OnConstraintColumns("id"),
-				options.UpdateColumnsOption("sort_order"),
+				options.UpdateColumns("sort_order"),
 			); err != nil {
 				return fmt.Errorf("创建新图片失败: %w", err)
 			}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"go-cookbook/internal/config"
 	authController "go-cookbook/internal/controller/auth"
 	dishController "go-cookbook/internal/controller/dish"
@@ -27,7 +28,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("解析配置失败: %v", err)
 	}
-	//fmt.Printf("配置: %+v\n", appcfg)
+	fmt.Printf("配置: %+v\n", appcfg)
 	wd, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("获取当前工作目录失败: %v", err)

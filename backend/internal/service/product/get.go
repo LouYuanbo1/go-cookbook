@@ -29,7 +29,7 @@ func (ps *productService) GetByCode(ctx context.Context, code string) (*dto.View
 	images, err := ps.repoFactory.ProductImage().FindByStructFilter(
 		ctx,
 		&model.ProductImage{ProductCode: code},
-		options.WithAscOption("order"),
+		options.WithAsc("order"),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("查询产品图片关系失败: %w", err)
