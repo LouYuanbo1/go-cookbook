@@ -8,7 +8,7 @@ import (
 	"go-cookbook/internal/utils"
 	"mime/multipart"
 
-	"github.com/LouYuanbo1/go-webservice/gormx/options"
+	"github.com/LouYuanbo1/go-webservice/gormx"
 )
 
 func (is *ingredientService) Update(ctx context.Context, req *dto.UpdateIngredientRequest) error {
@@ -87,8 +87,8 @@ func (is *ingredientService) Update(ctx context.Context, req *dto.UpdateIngredie
 				ctx,
 				upsertImages,
 				10,
-				options.OnConstraintColumns("id"),
-				options.UpdateColumns("sort_order"),
+				gormx.OnConstraintColumns("id"),
+				gormx.UpdateColumns("sort_order"),
 			); err != nil {
 				return fmt.Errorf("创建新图片失败: %w", err)
 			}

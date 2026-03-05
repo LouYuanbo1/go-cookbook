@@ -27,10 +27,10 @@ type authService struct {
 	jwtService     jwt.JWTService
 }
 
-func NewAuthService(authConfig *config.AuthConfig) AuthService {
-	cryptUtil := cryptutil.NewCryptUtil(authConfig.CryptUtil)
-	hashedPassword, _ := cryptUtil.Encrypt(authConfig.Password)
-	jwtService := jwt.NewJWTService(authConfig, "authService", []string{"authService"})
+func NewAuthService(config *config.AuthConfig) AuthService {
+	cryptUtil := cryptutil.NewCryptUtil(config.CryptUtil)
+	hashedPassword, _ := cryptUtil.Encrypt(config.Password)
+	jwtService := jwt.NewJWTService(config, "authService", []string{"authService"})
 	return &authService{
 		bcryptX:        cryptUtil,
 		hashedPassword: hashedPassword,

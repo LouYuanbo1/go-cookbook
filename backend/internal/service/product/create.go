@@ -7,7 +7,7 @@ import (
 	"go-cookbook/internal/model"
 	"go-cookbook/internal/utils"
 
-	"github.com/LouYuanbo1/go-webservice/gormx/options"
+	"github.com/LouYuanbo1/go-webservice/gormx"
 )
 
 func (ps *productService) Create(ctx context.Context, req *dto.CreateProductRequest) error {
@@ -44,15 +44,15 @@ func (ps *productService) Create(ctx context.Context, req *dto.CreateProductRequ
 			Price:          req.Price,
 			AllergenType:   req.AllergenType,
 		},
-			options.OnConstraintColumns("product_code"),
-			options.UpdateAll(),
+			gormx.OnConstraintColumns("product_code"),
+			gormx.UpdateAll(),
 		); err != nil {
 			return fmt.Errorf("创建产品失败: %w", err)
 		}
 		// 第二步：创建产品图片关系
 		if err := ps.repoFactory.ProductImage().CreateInBatches(ctx, imageURLs, 10,
-			options.OnConstraintColumns("product_code", "sort_order"),
-			options.UpdateAll(),
+			gormx.OnConstraintColumns("product_code", "sort_order"),
+			gormx.UpdateAll(),
 		); err != nil {
 			return fmt.Errorf("创建产品图片关系失败: %w", err)
 		}

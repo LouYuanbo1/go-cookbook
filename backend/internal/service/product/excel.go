@@ -9,7 +9,7 @@ import (
 	"mime/multipart"
 	"strconv"
 
-	"github.com/LouYuanbo1/go-webservice/gormx/options"
+	"github.com/LouYuanbo1/go-webservice/gormx"
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
 )
@@ -55,8 +55,8 @@ func (ps *productService) Import(ctx context.Context, fileHeader *multipart.File
 			fmt.Printf("已处理 %d 行，准备提交事务...\n", rowNum)
 
 			if err := ps.repoFactory.Product().CreateInBatches(ctx, products, batchSize,
-				options.OnConstraintColumns("product_code"),
-				options.UpdateAll(),
+				gormx.OnConstraintColumns("product_code"),
+				gormx.UpdateAll(),
 			); err != nil {
 				return fmt.Errorf("创建产品失败: %w", err)
 			}
@@ -103,8 +103,8 @@ func (ps *productService) Import(ctx context.Context, fileHeader *multipart.File
 		if i%batchSize == 0 && len(imageURLs) > 0 {
 			fmt.Printf("已处理 %d 图片，准备提交事务...\n", i)
 			if err := ps.repoFactory.ProductImage().CreateInBatches(ctx, imageURLs, batchSize,
-				options.OnConstraintColumns("product_code", "sort_order"),
-				options.UpdateAll(),
+				gormx.OnConstraintColumns("product_code", "sort_order"),
+				gormx.UpdateAll(),
 			); err != nil {
 				return fmt.Errorf("创建产品图片关系失败: %w", err)
 			}
@@ -159,8 +159,8 @@ func (ps *productService) Import(ctx context.Context, fileHeader *multipart.File
 			// 第一步：创建产品
 			if len(products) > 0 {
 				if err := ps.repoFactory.Product().CreateInBatches(ctx, products, batchSize,
-					options.OnConstraintColumns("product_code"),
-					options.UpdateAll(),
+					gormx.OnConstraintColumns("product_code"),
+					gormx.UpdateAll(),
 				); err != nil {
 					return fmt.Errorf("创建产品失败: %w", err)
 				}
@@ -169,8 +169,8 @@ func (ps *productService) Import(ctx context.Context, fileHeader *multipart.File
 			if len(imageURLs) > 0 {
 
 				if err := ps.repoFactory.ProductImage().CreateInBatches(ctx, imageURLs, batchSize,
-					options.OnConstraintColumns("product_code", "sort_order"),
-					options.UpdateAll(),
+					gormx.OnConstraintColumns("product_code", "sort_order"),
+					gormx.UpdateAll(),
 				); err != nil {
 					return fmt.Errorf("创建产品图片关系失败: %w", err)
 				}
