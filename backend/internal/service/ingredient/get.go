@@ -6,7 +6,7 @@ import (
 	"go-cookbook/internal/dto"
 	"go-cookbook/internal/model"
 
-	"github.com/LouYuanbo1/go-webservice/gormx/options"
+	"github.com/LouYuanbo1/go-webservice/gormx"
 )
 
 func (is *ingredientService) GetByCode(ctx context.Context, code string) (*dto.ViewIngredientResponse, error) {
@@ -24,7 +24,7 @@ func (is *ingredientService) GetByCode(ctx context.Context, code string) (*dto.V
 	images, err := is.repoFactory.IngredientImage().FindByStructFilter(
 		ctx,
 		&model.IngredientImage{IngredientCode: code},
-		options.WithAsc("order"),
+		gormx.WithAsc("order"),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("查询产品图片关系失败: %w", err)

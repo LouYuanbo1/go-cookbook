@@ -1,20 +1,20 @@
 package config
 
 import (
-	cryptCfg "github.com/LouYuanbo1/go-webservice/cryptutil/config"
-	gormCfg "github.com/LouYuanbo1/go-webservice/gormx/config"
-	imgCfg "github.com/LouYuanbo1/go-webservice/imgutil/config"
+	"github.com/LouYuanbo1/go-webservice/cryptutil"
+	"github.com/LouYuanbo1/go-webservice/gormx"
+	"github.com/LouYuanbo1/go-webservice/imgutil"
 )
 
 type Config struct {
-	DB      gormCfg.DBConfig     `mapstructure:"db"`
-	Auth    AuthConfig           `mapstructure:"auth"`
-	ImgUtil imgCfg.ImgUtilConfig `mapstructure:"img_util"`
+	DB      gormx.DBConfig `mapstructure:"db"`
+	Auth    AuthConfig     `mapstructure:"auth"`
+	ImgUtil imgutil.Config `mapstructure:"img_util"`
 }
 
 type AuthConfig struct {
-	CryptUtil cryptCfg.CryptUtilConfig `mapstructure:"crypt_util"`
-	Password  string                   `mapstructure:"password"`
-	SecretKey string                   `mapstructure:"secret_key"`
-	TokenExpire int64                    `mapstructure:"token_expire"`
+	CryptUtil   cryptutil.Config `mapstructure:"crypt_util"`
+	Password    string           `mapstructure:"password"`
+	SecretKey   string           `mapstructure:"secret_key"`
+	TokenExpire int64            `mapstructure:"token_expire"`
 }

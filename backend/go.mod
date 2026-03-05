@@ -3,7 +3,7 @@ module go-cookbook
 go 1.25.4
 
 require (
-	github.com/LouYuanbo1/go-webservice v0.0.0-20260227134813-c846fa88932e
+	github.com/LouYuanbo1/go-webservice v0.0.0-20260305133201-16cdefa24a84
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-playground/form/v4 v4.3.0
