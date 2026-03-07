@@ -6,25 +6,31 @@ import (
 	"go-cookbook/internal/model"
 	"os"
 	"path/filepath"
+
+	"github.com/LouYuanbo1/go-webservice/gormx/gen"
+	"gorm.io/gorm"
 )
 
 func (ps *productService) Delete(ctx context.Context, code string) error {
 	var images []*model.ProductImage
 	var err error
-	err = ps.repoFactory.Tx().Exec(ctx, func(ctx context.Context) error {
+	err = ps.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
+		productSession := gen.NewSession[model.Product, uint64](tx)
+		productImageSession := gen.NewSession[model.ProductImage, uint64](tx)
+
 		// 第一步：查询所有关联的图片
-		images, err = ps.repoFactory.ProductImage().FindByStructFilter(ctx, &model.ProductImage{ProductCode: code})
+		images, err = productImageSession.FindByStructFilter(ctx, &model.ProductImage{ProductCode: code})
 		if err != nil {
 			return fmt.Errorf("查询产品图片关系失败: %w", err)
 		}
 
 		// 第二步：删除产品图片关系
-		if err := ps.repoFactory.ProductImage().DeleteByStructFilter(ctx, &model.ProductImage{ProductCode: code}); err != nil {
+		if err := productImageSession.DeleteByStructFilter(ctx, &model.ProductImage{ProductCode: code}); err != nil {
 			return fmt.Errorf("删除产品图片关系失败: %w", err)
 		}
 
 		// 第三步：删除产品
-		if err := ps.repoFactory.Product().DeleteByStructFilter(ctx, &model.Product{ProductCode: code}); err != nil {
+		if err := productSession.DeleteByStructFilter(ctx, &model.Product{ProductCode: code}); err != nil {
 			return fmt.Errorf("删除产品失败: %w", err)
 		}
 		return nil

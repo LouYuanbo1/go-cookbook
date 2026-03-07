@@ -9,8 +9,10 @@ import (
 	"mime/multipart"
 
 	"github.com/LouYuanbo1/go-webservice/gormx"
+	"github.com/LouYuanbo1/go-webservice/gormx/gen"
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
+	"gorm.io/gorm"
 )
 
 // 非常恐怖的面条代码,强烈与excel和数据库结构耦合并且暂时无法优化,需要重点关注
@@ -54,10 +56,12 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 
 			fmt.Printf("已处理 %d 行，准备提交事务...\n", rowNum)
 
-			if err := ds.repoFactory.Tx().Exec(ctx, func(ctx context.Context) error {
+			if err := ds.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
+				dishSession := gen.NewSession[model.Dish, uint64](tx)
+				dishIngredientSession := gen.NewSession[model.DishIngredient, uint64](tx)
 				// 第一步：创建菜品
 				if len(dishes) > 0 {
-					if err := ds.repoFactory.Dish().CreateInBatches(ctx, dishes, batchSize,
+					if err := dishSession.CreateInBatches(ctx, dishes, batchSize,
 						gormx.OnConstraintColumns("dish_code"),
 						gormx.UpdateAll(),
 					); err != nil {
@@ -66,7 +70,7 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 				}
 				// 第二步：创建菜品食材关系
 				if len(dishIngredients) > 0 {
-					if err := ds.repoFactory.DishIngredient().CreateInBatches(ctx, dishIngredients, batchSize,
+					if err := dishIngredientSession.CreateInBatches(ctx, dishIngredients, batchSize,
 						gormx.OnConstraintColumns("dish_code", "ingredient_code"),
 						gormx.UpdateAll(),
 					); err != nil {
@@ -179,10 +183,13 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 
 		if len(dishes) > 0 || len(dishIngredients) > 0 || len(imageURLs) > 0 {
 
-			if err := ds.repoFactory.Tx().Exec(ctx, func(ctx context.Context) error {
+			if err := ds.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
+				dishSession := gen.NewSession[model.Dish, uint64](tx)
+				dishIngredientSession := gen.NewSession[model.DishIngredient, uint64](tx)
+				dishImageSession := gen.NewSession[model.DishImage, uint64](tx)
 				// 第一步：创建菜品
 				if len(dishes) > 0 {
-					if err := ds.repoFactory.Dish().CreateInBatches(ctx, dishes, batchSize,
+					if err := dishSession.CreateInBatches(ctx, dishes, batchSize,
 						gormx.OnConstraintColumns("dish_code"),
 						gormx.UpdateAll(),
 					); err != nil {
@@ -191,7 +198,7 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 				}
 				// 第二步：创建菜品食材关系
 				if len(dishIngredients) > 0 {
-					if err := ds.repoFactory.DishIngredient().CreateInBatches(ctx, dishIngredients, batchSize,
+					if err := dishIngredientSession.CreateInBatches(ctx, dishIngredients, batchSize,
 						gormx.OnConstraintColumns("dish_code", "ingredient_code"),
 						gormx.UpdateAll(),
 					); err != nil {
@@ -201,7 +208,7 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 				// 第三步：创建菜品图片关系
 				if len(imageURLs) > 0 {
 
-					if err := ds.repoFactory.DishImage().CreateInBatches(ctx, imageURLs, batchSize,
+					if err := dishImageSession.CreateInBatches(ctx, imageURLs, batchSize,
 						gormx.OnConstraintColumns("dish_code", "sort_order"),
 						gormx.UpdateAll(),
 					); err != nil {
@@ -243,7 +250,7 @@ func (ds *dishService) Export(gctx *gin.Context, batchSize int) error {
 	ctx := gctx.Request.Context()
 
 	err = ds.repoFactory.Dish().
-		FindInBatches(ctx, batchSize, func(ctx context.Context, batch int, ptrModels []*model.Dish) error {
+		FindInBatches(ctx, batchSize, func(ctx context.Context, tx *gorm.DB, batch int, ptrModels []*model.Dish) error {
 			for _, dish := range ptrModels {
 				// 构造一行数据（必须与表头列数一致）
 				row := []any{dish.DishCode, dish.Name, dish.Description, dish.Recipe}

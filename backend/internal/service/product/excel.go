@@ -10,8 +10,10 @@ import (
 	"strconv"
 
 	"github.com/LouYuanbo1/go-webservice/gormx"
+	"github.com/LouYuanbo1/go-webservice/gormx/gen"
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
+	"gorm.io/gorm"
 )
 
 // 非常恐怖的面条代码,强烈与excel和数据库结构耦合并且暂时无法优化,需要重点关注
@@ -155,10 +157,13 @@ func (ps *productService) Import(ctx context.Context, fileHeader *multipart.File
 	}
 
 	if len(products) > 0 || len(imageURLs) > 0 {
-		if err := ps.repoFactory.Tx().Exec(ctx, func(ctx context.Context) error {
+		if err := ps.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
+			productSession := gen.NewSession[model.Product, uint64](tx)
+			productImageSession := gen.NewSession[model.ProductImage, uint64](tx)
+
 			// 第一步：创建产品
 			if len(products) > 0 {
-				if err := ps.repoFactory.Product().CreateInBatches(ctx, products, batchSize,
+				if err := productSession.CreateInBatches(ctx, products, batchSize,
 					gormx.OnConstraintColumns("product_code"),
 					gormx.UpdateAll(),
 				); err != nil {
@@ -168,7 +173,7 @@ func (ps *productService) Import(ctx context.Context, fileHeader *multipart.File
 			// 第二步：创建产品图片关系
 			if len(imageURLs) > 0 {
 
-				if err := ps.repoFactory.ProductImage().CreateInBatches(ctx, imageURLs, batchSize,
+				if err := productImageSession.CreateInBatches(ctx, imageURLs, batchSize,
 					gormx.OnConstraintColumns("product_code", "sort_order"),
 					gormx.UpdateAll(),
 				); err != nil {
@@ -208,8 +213,8 @@ func (ps *productService) Export(gctx *gin.Context, batchSize int) error {
 
 	ctx := gctx.Request.Context()
 
-	err = ps.repoFactory.Product().FindInBatches(ctx, batchSize, func(ctx context.Context, batch int, ptrModels []*model.Product) error {
-		for _, product := range ptrModels {
+	err = ps.repoFactory.Product().FindInBatches(ctx, batchSize, func(ctx context.Context, tx *gorm.DB, batch int, models []*model.Product) error {
+		for _, product := range models {
 			// 构造一行数据（必须与表头列数一致）
 			row := []any{
 				product.ProductCode,
@@ -236,7 +241,7 @@ func (ps *productService) Export(gctx *gin.Context, batchSize int) error {
 			return fmt.Errorf("写入行 %d 失败: %w", currentRow, err)
 		}
 		// 可选：打印进度
-		log.Printf("已处理批次 %d,写入 %d 行", batch, len(ptrModels))
+		log.Printf("已处理批次 %d,写入 %d 行", batch, len(models))
 		return nil
 	})
 	if err != nil {

@@ -8,6 +8,8 @@ import (
 	"go-cookbook/internal/utils"
 
 	"github.com/LouYuanbo1/go-webservice/gormx"
+	"github.com/LouYuanbo1/go-webservice/gormx/gen"
+	"gorm.io/gorm"
 )
 
 func (is *ingredientService) Create(ctx context.Context, req *dto.CreateIngredientRequest) error {
@@ -32,9 +34,12 @@ func (is *ingredientService) Create(ctx context.Context, req *dto.CreateIngredie
 		})
 	}
 
-	err := is.repoFactory.Tx().Exec(ctx, func(ctx context.Context) error {
+	err := is.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
+		ingredientSession := gen.NewSession[model.Ingredient, uint64](tx)
+		ingredientImageSession := gen.NewSession[model.IngredientImage, uint64](tx)
+		
 		// 第一步：创建产品
-		if err := is.repoFactory.Ingredient().Create(ctx, &model.Ingredient{
+		if err := ingredientSession.Create(ctx, &model.Ingredient{
 			IngredientCode: req.IngredientCode,
 			Name:           req.Name,
 			Description:    req.Description,
@@ -45,7 +50,7 @@ func (is *ingredientService) Create(ctx context.Context, req *dto.CreateIngredie
 			return fmt.Errorf("创建产品失败: %w", err)
 		}
 		// 第二步：创建产品图片关系
-		if err := is.repoFactory.IngredientImage().CreateInBatches(ctx, imageURLs, 10,
+		if err := ingredientImageSession.CreateInBatches(ctx, imageURLs, 10,
 			gormx.OnConstraintColumns("ingredient_code", "sort_order"),
 			gormx.UpdateAll(),
 		); err != nil {

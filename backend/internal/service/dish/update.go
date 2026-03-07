@@ -7,8 +7,12 @@ import (
 	"go-cookbook/internal/model"
 	"go-cookbook/internal/utils"
 	"mime/multipart"
+	"os"
+	"path/filepath"
 
 	"github.com/LouYuanbo1/go-webservice/gormx"
+	"github.com/LouYuanbo1/go-webservice/gormx/gen"
+	"gorm.io/gorm"
 )
 
 /*
@@ -35,11 +39,17 @@ func (ds *dishService) Update(ctx context.Context, req *dto.UpdateDishRequest) e
 	}
 
 	deletedImages := make([]uint64, 0)
+	deletedImageURLs := make([]string, 0)
 	upsertImages := make([]*model.DishImage, 0) // id -> true
 	for _, img := range req.Images {
 		switch img.Type {
 		case "deleted":
 			deletedImages = append(deletedImages, img.ID)
+			img, err := ds.repoFactory.DishImage().GetByID(ctx, img.ID)
+			if err != nil {
+				return fmt.Errorf("查询删除图片失败: %w", err)
+			}
+			deletedImageURLs = append(deletedImageURLs, img.ImageURL)
 		case "existing":
 			upsertImages = append(upsertImages, &model.DishImage{
 				ID:       img.ID,
@@ -107,9 +117,13 @@ func (ds *dishService) Update(ctx context.Context, req *dto.UpdateDishRequest) e
 		}
 	}
 
-	err := ds.repoFactory.Tx().Exec(ctx, func(ctx context.Context) error {
+	err := ds.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
+		dishSession := gen.NewSession[model.Dish, uint64](tx)
+		dishImageSession := gen.NewSession[model.DishImage, uint64](tx)
+		dishIngredientSession := gen.NewSession[model.DishIngredient, uint64](tx)
+
 		// 第一步:更新菜品基本信息
-		err := ds.repoFactory.Dish().UpdateByStructFilter(ctx, &model.Dish{
+		err := dishSession.UpdateByStructFilter(ctx, &model.Dish{
 			DishCode: req.DishCode,
 		}, &model.Dish{
 			Name:        req.Name,
@@ -121,12 +135,12 @@ func (ds *dishService) Update(ctx context.Context, req *dto.UpdateDishRequest) e
 		}
 
 		// 第二步:删除图片
-		if err := ds.repoFactory.DishImage().DeleteByIDs(ctx, deletedImages); err != nil {
+		if err := dishImageSession.DeleteByIDs(ctx, deletedImages); err != nil {
 			return fmt.Errorf("删除删除图片失败: %w", err)
 		}
 
 		// 第三步:创建或更新图片
-		if err := ds.repoFactory.DishImage().CreateInBatches(
+		if err := dishImageSession.CreateInBatches(
 			ctx,
 			upsertImages,
 			10,
@@ -137,7 +151,7 @@ func (ds *dishService) Update(ctx context.Context, req *dto.UpdateDishRequest) e
 		}
 
 		// 第四步:创建或更新食材
-		if err := ds.repoFactory.DishIngredient().CreateInBatches(
+		if err := dishIngredientSession.CreateInBatches(
 			ctx,
 			upsertIngredients,
 			10,
@@ -152,5 +166,19 @@ func (ds *dishService) Update(ctx context.Context, req *dto.UpdateDishRequest) e
 	if err != nil {
 		return fmt.Errorf("更新菜品失败: %w", err)
 	}
+
+	// 第五步:删除图片文件
+	wd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("获取当前工作目录失败: %w", err)
+	}
+	for _, url := range deletedImageURLs {
+		filePath := filepath.Join(wd, url)
+		fmt.Printf("删除图片路径: %s\n", filePath)
+		if err := ds.imgUtil.Delete(filePath); err != nil {
+			return fmt.Errorf("删除图片失败: %w", err)
+		}
+	}
+
 	return nil
 }
