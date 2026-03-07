@@ -9,8 +9,10 @@ import (
 	"mime/multipart"
 
 	"github.com/LouYuanbo1/go-webservice/gormx"
+	"github.com/LouYuanbo1/go-webservice/gormx/gen"
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
+	"gorm.io/gorm"
 )
 
 // 非常恐怖的面条代码,强烈与excel和数据库结构耦合并且暂时无法优化,需要重点关注
@@ -144,10 +146,12 @@ func (is *ingredientService) Import(ctx context.Context, fileHeader *multipart.F
 
 	if len(ingredients) > 0 || len(imageURLs) > 0 {
 
-		if err := is.repoFactory.Tx().Exec(ctx, func(ctx context.Context) error {
+		if err := is.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
+			ingredientSession := gen.NewSession[model.Ingredient, uint64](tx)
+			ingredientImageSession := gen.NewSession[model.IngredientImage, uint64](tx)
 			// 第一步：创建产品
 			if len(ingredients) > 0 {
-				if err := is.repoFactory.Ingredient().CreateInBatches(ctx, ingredients, batchSize,
+				if err := ingredientSession.CreateInBatches(ctx, ingredients, batchSize,
 					gormx.OnConstraintColumns("ingredient_code"),
 					gormx.UpdateAll(),
 				); err != nil {
@@ -157,7 +161,7 @@ func (is *ingredientService) Import(ctx context.Context, fileHeader *multipart.F
 			// 第二步：创建产品图片关系
 			if len(imageURLs) > 0 {
 
-				if err := is.repoFactory.IngredientImage().CreateInBatches(ctx, imageURLs, batchSize,
+				if err := ingredientImageSession.CreateInBatches(ctx, imageURLs, batchSize,
 					gormx.OnConstraintColumns("ingredient_code", "sort_order"),
 					gormx.UpdateAll(),
 				); err != nil {
@@ -198,8 +202,8 @@ func (is *ingredientService) Export(gctx *gin.Context, batchSize int) error {
 
 	ctx := gctx.Request.Context()
 
-	err = is.repoFactory.Ingredient().FindInBatches(ctx, batchSize, func(ctx context.Context, batch int, ptrModels []*model.Ingredient) error {
-		for _, ingredient := range ptrModels {
+	err = is.repoFactory.Ingredient().FindInBatches(ctx, batchSize, func(ctx context.Context, tx *gorm.DB, batch int, models []*model.Ingredient) error {
+		for _, ingredient := range models {
 			// 构造一行数据（必须与表头列数一致）
 			row := []any{ingredient.IngredientCode, ingredient.Name, ingredient.Description}
 			// 计算单元格坐标，例如 A2, B2, ... 然后下一行 A3...
@@ -217,7 +221,7 @@ func (is *ingredientService) Export(gctx *gin.Context, batchSize int) error {
 			return fmt.Errorf("写入行 %d 失败: %w", currentRow, err)
 		}
 		// 可选：打印进度
-		log.Printf("已处理批次 %d,写入 %d 行", batch, len(ptrModels))
+		log.Printf("已处理批次 %d,写入 %d 行", batch, len(models))
 		return nil
 	})
 	if err != nil {

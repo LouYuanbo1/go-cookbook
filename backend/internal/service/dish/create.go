@@ -8,6 +8,8 @@ import (
 	"go-cookbook/internal/utils"
 
 	"github.com/LouYuanbo1/go-webservice/gormx"
+	"github.com/LouYuanbo1/go-webservice/gormx/gen"
+	"gorm.io/gorm"
 )
 
 func (ds *dishService) Create(ctx context.Context, req *dto.CreateDishRequest) error {
@@ -31,9 +33,14 @@ func (ds *dishService) Create(ctx context.Context, req *dto.CreateDishRequest) e
 		})
 	}
 
-	err := ds.repoFactory.Tx().Exec(ctx, func(ctx context.Context) error {
+	err := ds.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
+
+		dishSession := gen.NewSession[model.Dish, uint64](tx)
+		dishImageSession := gen.NewSession[model.DishImage, uint64](tx)
+		dishIngredientSession := gen.NewSession[model.DishIngredient, uint64](tx)
+
 		// 第一步：创建菜品
-		if err := ds.repoFactory.Dish().Create(ctx, &model.Dish{
+		if err := dishSession.Create(ctx, &model.Dish{
 			DishCode:    req.DishCode,
 			Name:        req.Name,
 			Description: req.Description,
@@ -45,7 +52,7 @@ func (ds *dishService) Create(ctx context.Context, req *dto.CreateDishRequest) e
 			return fmt.Errorf("创建菜品失败: %w", err)
 		}
 		// 第二步：创建菜品图片
-		if err := ds.repoFactory.DishImage().CreateInBatches(ctx, imageURLs, 10,
+		if err := dishImageSession.CreateInBatches(ctx, imageURLs, 10,
 			gormx.OnConstraintColumns("dish_code", "sort_order"),
 			gormx.UpdateAll(),
 		); err != nil {
@@ -63,7 +70,7 @@ func (ds *dishService) Create(ctx context.Context, req *dto.CreateDishRequest) e
 			})
 		}
 
-		if err := ds.repoFactory.DishIngredient().CreateInBatches(ctx, ingredients, 10,
+		if err := dishIngredientSession.CreateInBatches(ctx, ingredients, 10,
 			gormx.OnConstraintColumns("dish_code", "ingredient_code"),
 			gormx.UpdateAll(),
 		); err != nil {

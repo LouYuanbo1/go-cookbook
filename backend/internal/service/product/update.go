@@ -7,8 +7,12 @@ import (
 	"go-cookbook/internal/model"
 	"go-cookbook/internal/utils"
 	"mime/multipart"
+	"os"
+	"path/filepath"
 
 	"github.com/LouYuanbo1/go-webservice/gormx"
+	"github.com/LouYuanbo1/go-webservice/gormx/gen"
+	"gorm.io/gorm"
 )
 
 func (ps *productService) Update(ctx context.Context, req *dto.UpdateProductRequest) error {
@@ -21,6 +25,7 @@ func (ps *productService) Update(ctx context.Context, req *dto.UpdateProductRequ
 	}
 
 	deletedImages := make([]uint64, 0)
+	deletedImageURLs := make([]string, 0)
 	upsertImages := make([]*model.ProductImage, 0)
 
 	// 删除标记为deleted的图片
@@ -28,6 +33,11 @@ func (ps *productService) Update(ctx context.Context, req *dto.UpdateProductRequ
 		switch img.Type {
 		case "deleted":
 			deletedImages = append(deletedImages, img.ID)
+			img, err := ps.repoFactory.ProductImage().GetByID(ctx, img.ID)
+			if err != nil {
+				return fmt.Errorf("查询删除图片失败: %w", err)
+			}
+			deletedImageURLs = append(deletedImageURLs, img.ImageURL)
 		case "existing":
 			upsertImages = append(upsertImages, &model.ProductImage{
 				ID:          img.ID,
@@ -63,9 +73,12 @@ func (ps *productService) Update(ctx context.Context, req *dto.UpdateProductRequ
 		}
 	}
 
-	err := ps.repoFactory.Tx().Exec(ctx, func(ctx context.Context) error {
+	err := ps.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
+		productSession := gen.NewSession[model.Product, uint64](tx)
+		productImageSession := gen.NewSession[model.ProductImage, uint64](tx)
+
 		//第一步:更新产品基本信息
-		ps.repoFactory.Product().UpdateByStructFilter(ctx, &model.Product{ProductCode: req.ProductCode}, &model.Product{
+		productSession.UpdateByStructFilter(ctx, &model.Product{ProductCode: req.ProductCode}, &model.Product{
 			IngredientCode: req.IngredientCode,
 			Name:           req.Name,
 			Amount:         req.Amount,
@@ -79,7 +92,7 @@ func (ps *productService) Update(ctx context.Context, req *dto.UpdateProductRequ
 
 		// 第二步：删除图片
 		if len(deletedImages) > 0 {
-			if err := ps.repoFactory.ProductImage().DeleteByIDs(ctx, deletedImages); err != nil {
+			if err := productImageSession.DeleteByIDs(ctx, deletedImages); err != nil {
 				return fmt.Errorf("删除产品图片关系失败: %w", err)
 			}
 		}
@@ -88,7 +101,7 @@ func (ps *productService) Update(ctx context.Context, req *dto.UpdateProductRequ
 
 		// 第三步：更新或插入图片关系
 		if len(upsertImages) > 0 {
-			if err := ps.repoFactory.ProductImage().CreateInBatches(
+			if err := productImageSession.CreateInBatches(
 				ctx,
 				upsertImages,
 				10,
@@ -103,6 +116,19 @@ func (ps *productService) Update(ctx context.Context, req *dto.UpdateProductRequ
 	})
 	if err != nil {
 		return fmt.Errorf("更新菜品失败: %w", err)
+	}
+
+	// 第五步:删除图片文件
+	wd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("获取当前工作目录失败: %w", err)
+	}
+	for _, url := range deletedImageURLs {
+		filePath := filepath.Join(wd, url)
+		fmt.Printf("删除图片路径: %s\n", filePath)
+		if err := ps.imgUtil.Delete(filePath); err != nil {
+			return fmt.Errorf("删除图片失败: %w", err)
+		}
 	}
 	return nil
 }

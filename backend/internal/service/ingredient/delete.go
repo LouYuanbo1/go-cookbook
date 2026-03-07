@@ -6,25 +6,31 @@ import (
 	"go-cookbook/internal/model"
 	"os"
 	"path/filepath"
+
+	"github.com/LouYuanbo1/go-webservice/gormx/gen"
+	"gorm.io/gorm"
 )
 
 func (is *ingredientService) Delete(ctx context.Context, code string) error {
 	var images []*model.IngredientImage
 	var err error
-	err = is.repoFactory.Tx().Exec(ctx, func(ctx context.Context) error {
+	err = is.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
+		ingredientImageSession := gen.NewSession[model.IngredientImage, uint64](tx)
+		ingredientSession := gen.NewSession[model.Ingredient, uint64](tx)
+
 		// 第一步：查询所有关联的图片
-		images, err = is.repoFactory.IngredientImage().FindByStructFilter(ctx, &model.IngredientImage{IngredientCode: code})
+		images, err = ingredientImageSession.FindByStructFilter(ctx, &model.IngredientImage{IngredientCode: code})
 		if err != nil {
 			return fmt.Errorf("查询食材图片关系失败: %w", err)
 		}
 
 		// 第二步：删除食材图片关系
-		if err := is.repoFactory.IngredientImage().DeleteByStructFilter(ctx, &model.IngredientImage{IngredientCode: code}); err != nil {
+		if err := ingredientImageSession.DeleteByStructFilter(ctx, &model.IngredientImage{IngredientCode: code}); err != nil {
 			return fmt.Errorf("删除食材图片关系失败: %w", err)
 		}
 
 		// 第三步：删除食材
-		if err := is.repoFactory.Ingredient().DeleteByStructFilter(ctx, &model.Ingredient{IngredientCode: code}); err != nil {
+		if err := ingredientSession.DeleteByStructFilter(ctx, &model.Ingredient{IngredientCode: code}); err != nil {
 			return fmt.Errorf("删除食材失败: %w", err)
 		}
 		return nil
