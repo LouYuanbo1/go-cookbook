@@ -9,7 +9,6 @@ import (
 
 	"github.com/LouYuanbo1/go-webservice/gormx"
 	"github.com/LouYuanbo1/go-webservice/gormx/gen"
-	"gorm.io/gorm"
 )
 
 func (ds *dishService) Create(ctx context.Context, req *dto.CreateDishRequest) error {
@@ -33,11 +32,10 @@ func (ds *dishService) Create(ctx context.Context, req *dto.CreateDishRequest) e
 		})
 	}
 
-	err := ds.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
-
-		dishSession := gen.NewSession[model.Dish, uint64](tx)
-		dishImageSession := gen.NewSession[model.DishImage, uint64](tx)
-		dishIngredientSession := gen.NewSession[model.DishIngredient, uint64](tx)
+	err := ds.repoFactory.Tx().Exec(ctx, func(ctx context.Context, sf *gen.SessionFactory) error {
+		dishSession := gen.NewSessionFromFactory[model.Dish, uint64](sf)
+		dishImageSession := gen.NewSessionFromFactory[model.DishImage, uint64](sf)
+		dishIngredientSession := gen.NewSessionFromFactory[model.DishIngredient, uint64](sf)
 
 		// 第一步：创建菜品
 		if err := dishSession.Create(ctx, &model.Dish{

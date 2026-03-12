@@ -56,9 +56,9 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 
 			fmt.Printf("已处理 %d 行，准备提交事务...\n", rowNum)
 
-			if err := ds.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
-				dishSession := gen.NewSession[model.Dish, uint64](tx)
-				dishIngredientSession := gen.NewSession[model.DishIngredient, uint64](tx)
+			if err := ds.repoFactory.Tx().Exec(ctx, func(ctx context.Context, sf *gen.SessionFactory) error {
+				dishSession := gen.NewSessionFromFactory[model.Dish, uint64](sf)
+				dishIngredientSession := gen.NewSessionFromFactory[model.DishIngredient, uint64](sf)
 				// 第一步：创建菜品
 				if len(dishes) > 0 {
 					if err := dishSession.CreateInBatches(ctx, dishes, batchSize,
@@ -183,10 +183,10 @@ func (ds *dishService) Import(ctx context.Context, fileHeader *multipart.FileHea
 
 		if len(dishes) > 0 || len(dishIngredients) > 0 || len(imageURLs) > 0 {
 
-			if err := ds.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
-				dishSession := gen.NewSession[model.Dish, uint64](tx)
-				dishIngredientSession := gen.NewSession[model.DishIngredient, uint64](tx)
-				dishImageSession := gen.NewSession[model.DishImage, uint64](tx)
+			if err := ds.repoFactory.Tx().Exec(ctx, func(ctx context.Context, sf *gen.SessionFactory) error {
+				dishSession := gen.NewSessionFromFactory[model.Dish, uint64](sf)
+				dishIngredientSession := gen.NewSessionFromFactory[model.DishIngredient, uint64](sf)
+				dishImageSession := gen.NewSessionFromFactory[model.DishImage, uint64](sf)
 				// 第一步：创建菜品
 				if len(dishes) > 0 {
 					if err := dishSession.CreateInBatches(ctx, dishes, batchSize,

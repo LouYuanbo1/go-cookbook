@@ -8,15 +8,14 @@ import (
 	"path/filepath"
 
 	"github.com/LouYuanbo1/go-webservice/gormx/gen"
-	"gorm.io/gorm"
 )
 
 func (is *ingredientService) Delete(ctx context.Context, code string) error {
 	var images []*model.IngredientImage
 	var err error
-	err = is.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
-		ingredientImageSession := gen.NewSession[model.IngredientImage, uint64](tx)
-		ingredientSession := gen.NewSession[model.Ingredient, uint64](tx)
+	err = is.repoFactory.Tx().Exec(ctx, func(ctx context.Context, sf *gen.SessionFactory) error {
+		ingredientImageSession := gen.NewSessionFromFactory[model.IngredientImage, uint64](sf)
+		ingredientSession := gen.NewSessionFromFactory[model.Ingredient, uint64](sf)
 
 		// 第一步：查询所有关联的图片
 		images, err = ingredientImageSession.FindByStructFilter(ctx, &model.IngredientImage{IngredientCode: code})

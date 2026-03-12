@@ -146,9 +146,9 @@ func (is *ingredientService) Import(ctx context.Context, fileHeader *multipart.F
 
 	if len(ingredients) > 0 || len(imageURLs) > 0 {
 
-		if err := is.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
-			ingredientSession := gen.NewSession[model.Ingredient, uint64](tx)
-			ingredientImageSession := gen.NewSession[model.IngredientImage, uint64](tx)
+		if err := is.repoFactory.Tx().Exec(ctx, func(ctx context.Context, sf *gen.SessionFactory) error {
+			ingredientSession := gen.NewSessionFromFactory[model.Ingredient, uint64](sf)
+			ingredientImageSession := gen.NewSessionFromFactory[model.IngredientImage, uint64](sf)
 			// 第一步：创建产品
 			if len(ingredients) > 0 {
 				if err := ingredientSession.CreateInBatches(ctx, ingredients, batchSize,
