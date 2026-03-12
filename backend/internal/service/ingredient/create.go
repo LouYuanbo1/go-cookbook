@@ -9,7 +9,6 @@ import (
 
 	"github.com/LouYuanbo1/go-webservice/gormx"
 	"github.com/LouYuanbo1/go-webservice/gormx/gen"
-	"gorm.io/gorm"
 )
 
 func (is *ingredientService) Create(ctx context.Context, req *dto.CreateIngredientRequest) error {
@@ -34,10 +33,10 @@ func (is *ingredientService) Create(ctx context.Context, req *dto.CreateIngredie
 		})
 	}
 
-	err := is.repoFactory.Tx().Exec(ctx, func(ctx context.Context, tx *gorm.DB) error {
-		ingredientSession := gen.NewSession[model.Ingredient, uint64](tx)
-		ingredientImageSession := gen.NewSession[model.IngredientImage, uint64](tx)
-		
+	err := is.repoFactory.Tx().Exec(ctx, func(ctx context.Context, sf *gen.SessionFactory) error {
+		ingredientSession := gen.NewSessionFromFactory[model.Ingredient, uint64](sf)
+		ingredientImageSession := gen.NewSessionFromFactory[model.IngredientImage, uint64](sf)
+
 		// 第一步：创建产品
 		if err := ingredientSession.Create(ctx, &model.Ingredient{
 			IngredientCode: req.IngredientCode,
