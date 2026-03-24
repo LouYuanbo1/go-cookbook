@@ -19,7 +19,7 @@ func (ds *dishService) Delete(ctx context.Context, code string) error {
 		dishIngredientSession := gen.NewSessionFromFactory[model.DishIngredient, uint64](sf)
 
 		// 第一步：查询所有关联的图片
-		images, err = dishImageSession.FindByStructFilter(ctx, &model.DishImage{DishCode: code})
+		err = dishImageSession.FindByStructFilter(ctx, &images, &model.DishImage{DishCode: code})
 		if err != nil {
 			return fmt.Errorf("查询菜品图片关系失败: %w", err)
 		}

@@ -10,9 +10,10 @@ import (
 )
 
 func (is *ingredientService) GetByCode(ctx context.Context, code string) (*dto.ViewIngredientResponse, error) {
-	ingredient, err := is.repoFactory.Ingredient().GetByStructFilter(ctx, &model.Ingredient{IngredientCode: code})
+	var ingredient model.Ingredient
+	err := is.repoFactory.Ingredient().GetByStructFilter(ctx, &ingredient, &model.Ingredient{IngredientCode: code})
 	if err != nil {
-		return nil, fmt.Errorf("查询产品基本信息失败: %w", err)
+		return nil, fmt.Errorf("查询食材基本信息失败: %w", err)
 	}
 
 	ingredientResp := dto.ViewIngredientResponse{
@@ -21,13 +22,14 @@ func (is *ingredientService) GetByCode(ctx context.Context, code string) (*dto.V
 		Description:    ingredient.Description,
 	}
 
-	images, err := is.repoFactory.IngredientImage().FindByStructFilter(
-		ctx,
+	var images []*model.IngredientImage
+	err = is.repoFactory.IngredientImage().FindByStructFilter(
+		ctx, &images,
 		&model.IngredientImage{IngredientCode: code},
-		gormx.WithAsc("order"),
+		gormx.WithAsc("sort_order"),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("查询产品图片关系失败: %w", err)
+		return nil, fmt.Errorf("查询食材图片关系失败: %w", err)
 	}
 
 	ingredientResp.Images = make([]dto.ImageResponse, 0, len(images))

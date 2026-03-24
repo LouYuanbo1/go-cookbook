@@ -28,7 +28,8 @@ func (is *ingredientService) Update(ctx context.Context, req *dto.UpdateIngredie
 		switch img.Type {
 		case "deleted":
 			deletedImages = append(deletedImages, img.ID)
-			img, err := is.repoFactory.IngredientImage().GetByID(ctx, img.ID)
+			var img model.IngredientImage
+			err := is.repoFactory.IngredientImage().GetByID(ctx, &img, img.ID)
 			if err != nil {
 				return fmt.Errorf("查询删除图片失败: %w", err)
 			}

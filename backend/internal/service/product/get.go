@@ -10,7 +10,8 @@ import (
 )
 
 func (ps *productService) GetByCode(ctx context.Context, code string) (*dto.ViewProductResponse, error) {
-	product, err := ps.repoFactory.Product().GetByStructFilter(ctx, &model.Product{ProductCode: code})
+	var product model.Product
+	err := ps.repoFactory.Product().GetByStructFilter(ctx, &product, &model.Product{ProductCode: code})
 	if err != nil {
 		return nil, fmt.Errorf("查询产品基本信息失败: %w", err)
 	}
@@ -26,10 +27,11 @@ func (ps *productService) GetByCode(ctx context.Context, code string) (*dto.View
 		AllergenType:   product.AllergenType,
 	}
 
-	images, err := ps.repoFactory.ProductImage().FindByStructFilter(
-		ctx,
+	var images []*model.ProductImage
+	err = ps.repoFactory.ProductImage().FindByStructFilter(
+		ctx, &images,
 		&model.ProductImage{ProductCode: code},
-		gormx.WithAsc("order"),
+		gormx.WithAsc("sort_order"),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("查询产品图片关系失败: %w", err)

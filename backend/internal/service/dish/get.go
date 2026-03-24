@@ -10,7 +10,8 @@ import (
 )
 
 func (ds *dishService) GetByCode(ctx context.Context, code string) (*dto.ViewDishResponse, error) {
-	dish, err := ds.repoFactory.Dish().GetByStructFilter(ctx, &model.Dish{DishCode: code})
+	var dish model.Dish
+	err := ds.repoFactory.Dish().GetByStructFilter(ctx, &dish, &model.Dish{DishCode: code})
 	if err != nil {
 		return nil, fmt.Errorf("查询菜品基本信息失败: %w", err)
 	}
@@ -22,7 +23,8 @@ func (ds *dishService) GetByCode(ctx context.Context, code string) (*dto.ViewDis
 		Recipe:      dish.Recipe,
 	}
 
-	images, err := ds.repoFactory.DishImage().FindByStructFilter(ctx, &model.DishImage{DishCode: code}, gormx.WithAsc("order"))
+	var images []*model.DishImage
+	err = ds.repoFactory.DishImage().FindByStructFilter(ctx, &images, &model.DishImage{DishCode: code}, gormx.WithAsc("sort_order"))
 	if err != nil {
 		return nil, fmt.Errorf("查询菜品图片关系失败: %w", err)
 	}
