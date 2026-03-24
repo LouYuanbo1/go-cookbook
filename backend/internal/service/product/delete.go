@@ -18,7 +18,7 @@ func (ps *productService) Delete(ctx context.Context, code string) error {
 		productImageSession := gen.NewSessionFromFactory[model.ProductImage, uint64](sf)
 
 		// 第一步：查询所有关联的图片
-		images, err = productImageSession.FindByStructFilter(ctx, &model.ProductImage{ProductCode: code})
+		err = productImageSession.FindByStructFilter(ctx, &images, &model.ProductImage{ProductCode: code})
 		if err != nil {
 			return fmt.Errorf("查询产品图片关系失败: %w", err)
 		}

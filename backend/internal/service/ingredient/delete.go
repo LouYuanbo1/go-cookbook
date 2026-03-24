@@ -18,7 +18,7 @@ func (is *ingredientService) Delete(ctx context.Context, code string) error {
 		ingredientSession := gen.NewSessionFromFactory[model.Ingredient, uint64](sf)
 
 		// 第一步：查询所有关联的图片
-		images, err = ingredientImageSession.FindByStructFilter(ctx, &model.IngredientImage{IngredientCode: code})
+		err = ingredientImageSession.FindByStructFilter(ctx, &images, &model.IngredientImage{IngredientCode: code})
 		if err != nil {
 			return fmt.Errorf("查询食材图片关系失败: %w", err)
 		}

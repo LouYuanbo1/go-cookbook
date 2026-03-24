@@ -44,7 +44,8 @@ func (ds *dishService) Update(ctx context.Context, req *dto.UpdateDishRequest) e
 		switch img.Type {
 		case "deleted":
 			deletedImages = append(deletedImages, img.ID)
-			img, err := ds.repoFactory.DishImage().GetByID(ctx, img.ID)
+			var img model.DishImage
+			err := ds.repoFactory.DishImage().GetByID(ctx, &img, img.ID)
 			if err != nil {
 				return fmt.Errorf("查询删除图片失败: %w", err)
 			}
