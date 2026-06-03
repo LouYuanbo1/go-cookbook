@@ -3,14 +3,16 @@ package productService
 import (
 	"context"
 	"image"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/LouYuanbo1/go-webservice/cache"
-	"github.com/LouYuanbo1/go-webservice/cache/driver/local"
+	"github.com/LouYuanbo1/go-webservice/cache/driver/redis"
 	"github.com/LouYuanbo1/go-webservice/gormc"
 	"github.com/LouYuanbo1/go-webservice/gormx"
 	"github.com/LouYuanbo1/go-webservice/singleflightx"
+	"github.com/alicebob/miniredis/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"gorm.io/driver/sqlite"
@@ -68,13 +70,13 @@ func setupTestDB(t *testing.T) *gormc.CacheDB {
 	}
 
 	err = db.AutoMigrate(
-		&model.Product{},
-		&model.ProductImage{},
-		&model.Ingredient{},
-		&model.IngredientImage{},
 		&model.Dish{},
 		&model.DishImage{},
 		&model.DishIngredient{},
+		&model.Ingredient{},
+		&model.IngredientImage{},
+		&model.Product{},
+		&model.ProductImage{},
 	)
 	if err != nil {
 		t.Fatalf("failed to migrate database: %v", err)
@@ -82,16 +84,31 @@ func setupTestDB(t *testing.T) *gormc.CacheDB {
 
 	gormxDB := gormx.NewDB(db)
 
-	localDriver := local.NewDriver(&local.Config{
-		CacheSize: 1024 * 1024 * 100,
-	}, singleflightx.NewSingleFlight())
+	mr, err := miniredis.Run()
+	assert.NoError(t, err)
 
-	cacheImpl, err := cache.Open(localDriver)
-	if err != nil {
-		t.Fatalf("failed to open cache: %v", err)
+	// 在测试结束时关闭 miniredis
+	t.Cleanup(func() {
+		mr.Close()
+	})
+
+	// 将端口字符串转换为整数
+	port, err := strconv.Atoi(mr.Port())
+	assert.NoError(t, err)
+
+	// 使用 miniredis 的地址创建配置
+	config := &redis.Config{
+		Host: mr.Host(),
+		Port: port,
 	}
 
-	cacheClient := cache.NewClient(cacheImpl)
+	client, err := redis.InitRedisClient(config)
+	assert.NoError(t, err)
+
+	cacher, err := redis.NewRedisCache(client, singleflightx.NewSingleFlight())
+	assert.NoError(t, err)
+
+	cacheClient := cache.NewClient(cacher)
 
 	cacheDB := gormc.NewCacheDB(gormxDB, cacheClient, &gormc.Config{
 		TTL: time.Minute,

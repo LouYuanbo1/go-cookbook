@@ -3,7 +3,7 @@ module go-cookbook
 go 1.27
 
 require (
-	github.com/LouYuanbo1/go-webservice v0.0.0-20260527102325-fa805e658501
+	github.com/LouYuanbo1/go-webservice v0.0.0-20260603203156-0961905f4b15
 	github.com/disintegration/imaging v1.6.2
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/gin-gonic/gin v1.12.0
@@ -21,6 +21,7 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/alicebob/miniredis/v2 v2.38.0 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/bytedance/sonic v1.15.0 // indirect
 	github.com/bytedance/sonic/loader v0.5.0 // indirect
@@ -69,6 +70,7 @@ require (
 	github.com/ugorji/go/codec v1.3.1 // indirect
 	github.com/xuri/efp v0.0.1 // indirect
 	github.com/xuri/nfp v0.0.2-0.20250530014748-2ddeb826f9a9 // indirect
+	github.com/yuin/gopher-lua v1.1.1 // indirect
 	go.mongodb.org/mongo-driver/v2 v2.5.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect

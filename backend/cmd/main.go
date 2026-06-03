@@ -19,12 +19,14 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/LouYuanbo1/go-webservice/breaker"
 	"github.com/LouYuanbo1/go-webservice/cache"
 	"github.com/LouYuanbo1/go-webservice/cache/driver/redis"
 	"github.com/LouYuanbo1/go-webservice/gormc"
 	"github.com/LouYuanbo1/go-webservice/gormx"
 	"github.com/LouYuanbo1/go-webservice/singleflightx"
 	"github.com/gin-gonic/gin"
+	red "github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -44,8 +46,17 @@ func main() {
 	}
 	imgUtil := imgutil.NewImgUtil(appcfg.ImgUtil)
 
-	redisCache := redis.NewDriver(&appcfg.Redis, singleflightx.NewSingleFlight())
-	cacher, err := cache.Open(redisCache)
+	redisBreaker := breaker.NewBreaker(
+		breaker.WithName("redis"),
+	)
+
+	redisHook := redis.NewBreakerHook(redisBreaker)
+
+	redisClient, err := redis.InitRedisClient(&appcfg.Redis, []red.Hook{redisHook}...)
+	if err != nil {
+		panic(err)
+	}
+	cacher, err := redis.NewRedisCache(redisClient, singleflightx.NewSingleFlight())
 	if err != nil {
 		panic(err)
 	}
