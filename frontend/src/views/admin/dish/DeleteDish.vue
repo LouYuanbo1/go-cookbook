@@ -235,16 +235,9 @@ import request from '../../../api/request';
 import ScrollPicker from '../../../components/picker/ScrollPicker.vue';
 import type { FetchResult } from '../../../components/picker/ScrollPicker.vue';
 import type { ImageItem } from '../../../components/image/ImageManager.vue'; // 仅类型
-import type { ImageResponse, ViewDishIngredientCardListWithCursor, ViewDishCard, ViewDishCardListWithCursor } from '../../../types/types';
+import type { DishIngredientCardCursorResp, DishCardResp, DishCardCursorResp, DishResp } from '../../../types/types';
 
 // ---------- 类型定义 ----------
-interface ViewDishResponse {
-  dishCode: string;
-  name: string;
-  description: string;
-  recipe: string;
-  images: ImageResponse[];
-}
 
 interface SelectedIngredient {
   ingredientCode: string;
@@ -280,17 +273,17 @@ const dishScrollPickerRef = ref<InstanceType<typeof ScrollPicker> | null>(null);
 const isDeleteValid = computed(() => form.dishCode.trim() !== '');
 
 // ---------- 数据获取函数 ----------
-const fetchDishes = async (cursor: number, limit: number): Promise<FetchResult<ViewDishCard>> => {
+const fetchDishes = async (cursor: number, limit: number): Promise<FetchResult<DishCardResp>> => {
   const res = await request({
     url: '/api/dishes',
     method: 'GET',
     params: { cursor, limit },
   });
-  const data: ViewDishCardListWithCursor = res.data;
+  const data: DishCardCursorResp = res.data;
   return {
-    items: data.dishes || [],
+    items: data.items || [],
     cursor: data.cursor || 0,
-    hasMore: data.hasMore || false,
+    hasMore: data.has_more || false,
   };
 };
 
@@ -304,7 +297,7 @@ const closeDishPicker = () => {
 };
 
 // ---------- 处理菜品选择 ----------
-const handleDishSelected = (item: ViewDishCard) => {
+const handleDishSelected = (item: DishCardResp) => {
   fetchDishDetail(item.dishCode);
   closeDishPicker();
 };
@@ -329,7 +322,7 @@ const fetchDishDetail = async (code: string) => {
       }),
     ]);
 
-    const dishData: ViewDishResponse = dishRes.data;
+    const dishData: DishResp = dishRes.data;
 
     form.dishCode = dishData.dishCode;
     form.name = dishData.name;
@@ -346,10 +339,10 @@ const fetchDishDetail = async (code: string) => {
     existingImages.sort((a, b) => a.sortOrder - b.sortOrder);
     imageList.value = existingImages;
 
-    const dishIngredientsData: ViewDishIngredientCardListWithCursor = dishIngredientsRes.data;
+    const dishIngredientsData: DishIngredientCardCursorResp = dishIngredientsRes.data;
 
     // 填充食材列表（只读）
-    const ingredients: SelectedIngredient[] = (dishIngredientsData.dishIngredients || []).map((ing: any) => ({
+    const ingredients: SelectedIngredient[] = (dishIngredientsData.items || []).map((ing: any) => ({
       ingredientCode: ing.ingredientCode,
       name: ing.name,
       quantity: ing.quantity || '',

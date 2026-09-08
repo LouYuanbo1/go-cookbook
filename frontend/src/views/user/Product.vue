@@ -103,18 +103,9 @@ const AllergenType = {
 type UnitType = typeof UnitType[keyof typeof UnitType];
 type AllergenType = typeof AllergenType[keyof typeof AllergenType];
 
-interface ImageResponse {
-  id: number;
-  sortOrder: number;
-  imageURL: string;
-}
+import type { ImageResp, DishCardResp } from '../../types/types'
 
-interface ViewDishCard {
-  dishCode: string;
-  name: string;
-  image: ImageResponse;
-}
-
+// 类型定义
 interface ViewProductResponse {
   productCode: string;
   ingredientCode: string;
@@ -124,13 +115,13 @@ interface ViewProductResponse {
   description: string;
   price: number;
   allergenType: AllergenType;
-  images: ImageResponse[];
+  images: ImageResp[];
 }
 
 // 响应式数据
 const product = ref<ViewProductResponse | null>(null)
 const loading = ref(true)
-const dishList = ref<ViewDishCard[]>([])
+const dishList = ref<DishCardResp[]>([])
 
 // 初始化数据
 const initializeProductData = async () => {
@@ -155,7 +146,7 @@ const initializeProductData = async () => {
     ])
     
     product.value = productRes.data
-    dishList.value = dishesRes.data.dishes || []
+    dishList.value = dishesRes.data?.items || []
     
   } catch (error) {
     console.error('Failed to fetch data:', error)

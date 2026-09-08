@@ -238,7 +238,7 @@ import ImageManager from '../../../components/image/ImageManager.vue';
 import ScrollPicker from '../../../components/picker/ScrollPicker.vue';
 import type { ImageItem } from '../../../components/image/ImageManager.vue';
 import type { FetchFunction, FetchResult } from '../../../components/picker/ScrollPicker.vue';
-import type {ViewIngredientCard,ViewIngredientCardListWithCursor} from '../../../types/types';
+import type { IngredientCardResp, IngredientCardCursorResp } from '../../../types/types';
 
 // ---------- 枚举选项（从 CreateProduct 复制而来）----------
 const unitOptions = [
@@ -324,18 +324,18 @@ watch(
 );
 
 // ---------- 获取食材列表的 fetch 函数（供 ScrollPicker 使用）----------
-const fetchIngredients: FetchFunction<ViewIngredientCard> = async (cursor, limit): Promise<FetchResult<ViewIngredientCard>> => {
+const fetchIngredients: FetchFunction<IngredientCardResp> = async (cursor, limit): Promise<FetchResult<IngredientCardResp>> => {
   try {
     const response = await request({
       url: '/api/ingredients',
       method: 'GET',
       params: { cursor, limit },
     });
-    const data = response.data as ViewIngredientCardListWithCursor;
+    const data = response.data as IngredientCardCursorResp;
     return {
-      items: data.ingredients,
+      items: data.items,
       cursor: data.cursor,
-      hasMore: data.hasMore,
+      hasMore: data.has_more,
     };
   } catch (error) {
     console.error('获取食材列表失败:', error);
@@ -344,7 +344,7 @@ const fetchIngredients: FetchFunction<ViewIngredientCard> = async (cursor, limit
 };
 
 // ---------- 处理食材选择 ----------
-const handleIngredientSelect = (ingredient: ViewIngredientCard) => {
+const handleIngredientSelect = (ingredient: IngredientCardResp) => {
   // 检查是否已经添加
   const exists = selectedIngredients.value.some(
     (item) => item.ingredientCode === ingredient.ingredientCode
@@ -404,14 +404,16 @@ const handleSubmit = async () => {
     }
   });
 
-  // MODIFIED: 遍历食材，将 amount + unit 组合成 quantity 字符串
-  selectedIngredients.value.forEach((item, index) => {
-    formData.append(`ingredients[${index}].ingredientCode`, item.ingredientCode);
-    // 根据单位代码获取显示标签，组合用量字符串，若未填则留空
+  // 遍历食材，每个食材序列化为一个 JSON 字符串，以 "ingredients" 为 key 多次 append
+  // Gin 的 form binding 会收集所有同名 key 的值，然后逐个 JSON 反序列化到结构体中
+  selectedIngredients.value.forEach((item) => {
     const unitLabel = unitOptions.find(u => u.value === item.unit)?.label || item.unit;
     const quantityStr = item.amount && item.unit ? `${item.amount} ${unitLabel}` : '';
-    formData.append(`ingredients[${index}].quantity`, quantityStr);
-    formData.append(`ingredients[${index}].note`, item.note.trim());
+    formData.append('ingredients', JSON.stringify({
+      ingredientCode: item.ingredientCode,
+      quantity: quantityStr,
+      note: item.note.trim(),
+    }));
   });
 
   try {

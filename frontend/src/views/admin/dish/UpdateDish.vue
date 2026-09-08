@@ -314,17 +314,9 @@ import ImageManager from '../../../components/image/ImageManager.vue';
 import ScrollPicker from '../../../components/picker/ScrollPicker.vue';
 import type { ImageItem } from '../../../components/image/ImageManager.vue';
 import type { FetchResult } from '../../../components/picker/ScrollPicker.vue';
-import type { ImageRequest,ImageResponse, ViewIngredientCard, ViewIngredientCardListWithCursor,ViewDishIngredientCard, ViewDishIngredientCardListWithCursor,ViewDishCard, ViewDishCardListWithCursor } from '../../../types/types';
-import { v7 as uuidv7 } from 'uuid';
+import type { IngredientCardResp, IngredientCardCursorResp, DishIngredientCardResp, DishIngredientCardCursorResp, DishCardResp, DishCardCursorResp, DishResp } from '../../../types/types';
 
 // ---------- 类型定义 ----------
-interface ViewDishResponse {
-  dishCode: string;
-  name: string;
-  description: string;
-  recipe: string;
-  images: ImageResponse[];
-}
 
 interface UpdateDishForm {
   dishCode: string;
@@ -383,31 +375,31 @@ const isFormValid = computed(() => {
 });
 
 // ---------- 数据获取函数 ----------
-const fetchDishes = async (cursor: number, limit: number): Promise<FetchResult<ViewDishCard>> => {
+const fetchDishes = async (cursor: number, limit: number): Promise<FetchResult<DishCardResp>> => {
   const res = await request({
     url: '/api/dishes',
     method: 'GET',
     params: { cursor, limit },
   });
-  const data: ViewDishCardListWithCursor = res.data;
+  const data: DishCardCursorResp = res.data;
   return {
-    items: data.dishes || [],
+    items: data.items || [],
     cursor: data.cursor || 0,
-    hasMore: data.hasMore || false,
+    hasMore: data.has_more || false,
   };
 };
 
-const fetchIngredients = async (cursor: number, limit: number): Promise<FetchResult<ViewIngredientCard>> => {
+const fetchIngredients = async (cursor: number, limit: number): Promise<FetchResult<IngredientCardResp>> => {
   const res = await request({
     url: '/api/ingredients',
     method: 'GET',
     params: { cursor, limit },
   });
-  const data: ViewIngredientCardListWithCursor = res.data;
+  const data: IngredientCardCursorResp = res.data;
   return {
-    items: data.ingredients || [],
+    items: data.items || [],
     cursor: data.cursor || 0,
-    hasMore: data.hasMore || false,
+    hasMore: data.has_more || false,
   };
 };
 
@@ -420,7 +412,7 @@ const closeDishPicker = () => {
 };
 
 // ---------- 处理菜品选择 ----------
-const handleDishSelected = (item: ViewDishCard) => {
+const handleDishSelected = (item: DishCardResp) => {
   fetchDishDetail(item.dishCode);
   closeDishPicker();
 };
@@ -451,7 +443,7 @@ const fetchDishDetail = async (code: string) => {
       }),
     ]);
 
-    const dishData: ViewDishResponse = dishRes.data;
+    const dishData: DishResp = dishRes.data;
 
     // 填充基本信息
     form.dishCode = dishData.dishCode;
@@ -470,10 +462,10 @@ const fetchDishDetail = async (code: string) => {
     imageList.value = existingImages;
     deletedImageIds.value.clear();
 
-    const dishIngredientsData: ViewDishIngredientCardListWithCursor = dishIngredientsRes.data;
+    const dishIngredientsData: DishIngredientCardCursorResp = dishIngredientsRes.data;
 
     // 填充食材列表
-    const ingredients: SelectedIngredient[] = (dishIngredientsData.dishIngredients || []).map((ing: any) => ({
+    const ingredients: SelectedIngredient[] = (dishIngredientsData.items || []).map((ing: any) => ({
       ingredientCode: ing.ingredientCode,
       name: ing.name,
       quantity: ing.quantity || '',
@@ -512,7 +504,7 @@ const resetForm = () => {
 };
 
 // ---------- 处理食材选择（从弹窗添加）----------
-const handleIngredientSelect = (ingredient: ViewDishIngredientCard) => {
+const handleIngredientSelect = (ingredient: DishIngredientCardResp) => {
   // 检查是否已经存在（包括已删除记录中？但删除后应移除，所以只需检查当前列表）
   const exists = selectedIngredients.value.some(
     (item) => item.ingredientCode === ingredient.ingredientCode
@@ -563,74 +555,65 @@ const handleSubmit = async () => {
   formData.append('description', form.description.trim());
   formData.append('recipe', form.recipe.trim());
 
-  // ===== 构建图片数据 =====
-  const newImageFiles: { tempID: string; file: File }[] = [];
-  const imageRequests: ImageRequest[] = [];
+  // ===== 构建图片数据（扁平化结构） =====
+  // 1. 新图片文件
+  const newImageFiles: File[] = [];
+  const newImageOrders: number[] = [];
 
   imageList.value.forEach((img, idx) => {
-    if (img.status === 'existing' && img.id) {
-      imageRequests.push({
-        type: 'existing',
-        id: img.id,
-        tempID: '',
-        sortOrder: idx,
-      });
-    } else if (img.status === 'new' && img.file) {
-      const tempID = 'temp' + uuidv7();
-      imageRequests.push({
-        type: 'new',
-        id: 0,
-        tempID: tempID,
-        sortOrder: idx,
-      });
-      newImageFiles.push({
-        tempID: tempID,
-        file: img.file,
-      });
+    if (img.status === 'new' && img.file) {
+      newImageFiles.push(img.file);
+      newImageOrders.push(idx);
     }
   });
 
+  // 添加新图片文件
+  newImageFiles.forEach((file) => {
+    formData.append('newImages', file);
+  });
+
+  // 添加新图片的排序顺序
+  newImageOrders.forEach((order) => {
+    formData.append('newImageOrders', order.toString());
+  });
+
+  // 2. 现有图片的更新（ID + 排序顺序），每个图片序列化为一个 JSON 字符串
+  imageList.value.forEach((img, idx) => {
+    if (img.status === 'existing' && img.id) {
+      formData.append('updatedImages', JSON.stringify({
+        id: img.id,
+        sortOrder: idx,
+      }));
+    }
+  });
+
+  // 3. 删除的图片ID列表
   deletedImageIds.value.forEach((id) => {
-    imageRequests.push({
-      type: 'deleted',
-      id,
-      tempID: '',
-      sortOrder: 0,
-    });
-  });
-
-  // 添加 images 数组字段
-  imageRequests.forEach((req, index) => {
-    formData.append(`images[${index}].type`, req.type);
-    formData.append(`images[${index}].id`, req.id.toString());
-    formData.append(`images[${index}].tempID`, req.tempID || '');
-    formData.append(`images[${index}].sortOrder`, req.sortOrder.toString());
-  });
-
-  // 添加 newImages 文件
-  newImageFiles.forEach((file, index) => {
-    formData.append(`newImages[${index}].tempID`, file.tempID);
-    formData.append(`newImages[${index}].file`, file.file);
+    formData.append('deletedImageIDs', id.toString());
   });
 
   // ===== 构建食材数据 =====
+  // 每个食材序列化为一个 JSON 字符串，以 "ingredients" 为 key 多次 append
+  // Gin 的 form binding 会收集所有同名 key 的值，然后逐个 JSON 反序列化到结构体中
   // 1. 当前列表中的食材（existing 和 new）
-  selectedIngredients.value.forEach((ing, index) => {
+  selectedIngredients.value.forEach((ing) => {
     const type = ing.isExisting ? 'existing' : 'new';
-    formData.append(`ingredients[${index}].type`, type);
-    formData.append(`ingredients[${index}].ingredientCode`, ing.ingredientCode);
-    formData.append(`ingredients[${index}].quantity`, ing.quantity.trim());
-    formData.append(`ingredients[${index}].note`, ing.note.trim());
+    formData.append('ingredients', JSON.stringify({
+      type: type,
+      ingredientCode: ing.ingredientCode,
+      quantity: ing.quantity.trim(),
+      note: ing.note.trim(),
+    }));
   });
 
   // 2. 被删除的原有食材（deleted）
-  let deletedIndex = selectedIngredients.value.length;
   deletedIngredientCodes.value.forEach((code) => {
-    formData.append(`ingredients[${deletedIndex}].type`, 'deleted');
-    formData.append(`ingredients[${deletedIndex}].ingredientCode`, code);
-    formData.append(`ingredients[${deletedIndex}].quantity`, '');
-    formData.append(`ingredients[${deletedIndex}].note`, '');
-    deletedIndex++;
+    formData.append('ingredients', JSON.stringify({
+      type: 'deleted',
+      ingredientCode: code,
+      quantity: '',
+      note: '',
+    }));
   });
 
   try {

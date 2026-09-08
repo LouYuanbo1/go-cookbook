@@ -1,14 +1,14 @@
 package middleware
 
 import (
-	"go-cookbook/internal/service/jwt"
+	"go-cookbook/internal/common/utils/jwt"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-func JWTMiddleware(jwtService jwt.JWTService) gin.HandlerFunc {
+func JWTMiddleware(jwtUtil jwt.JWTUtil) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 从请求头中获取 Authorization 字段
 		authHeader := c.GetHeader("Authorization")
@@ -25,7 +25,7 @@ func JWTMiddleware(jwtService jwt.JWTService) gin.HandlerFunc {
 			return
 		}
 		// 解析 JWT 令牌
-		claims, err := jwtService.ParseToken(tokenString)
+		claims, err := jwtUtil.ParseToken(tokenString)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"code": http.StatusUnauthorized, "msg": "error", "error": "未授权"})
 			c.Abort()

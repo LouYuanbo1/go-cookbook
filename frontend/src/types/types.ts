@@ -1,62 +1,100 @@
-export interface NewImageFile {
-  tempID: string;
-  file: File;
-}
+// ========== 请求类型 ==========
 
-export interface ImageRequest {
-  type: 'existing' | 'new' | 'deleted';
+// 更新现有图片的请求（ID + 排序顺序）
+export interface UpdateImageReq {
   id: number;
-  tempID?: string;
   sortOrder: number;
 }
 
-export interface ImageResponse {
+// ========== 响应类型 ==========
+
+// 基础图片响应
+export interface ImageResp {
   id: number;
   sortOrder: number;
   imageURL: string;
 }
 
-export interface ViewIngredientCard {
+// 菜品详情响应
+export interface DishResp {
+  dishCode: string;
+  name: string;
+  description: string;
+  recipe: string;
+  images: ImageResp[];
+}
+
+// 菜品卡片响应（列表用）
+export interface DishCardResp {
+  id: number;
+  dishCode: string;
+  name: string;
+  image: ImageResp;
+}
+
+// 食材详情响应
+export interface IngredientResp {
   ingredientCode: string;
   name: string;
   description: string;
-  image?: ImageResponse;
+  images: ImageResp[];
 }
 
-export interface ViewIngredientCardListWithCursor {
-  ingredients: ViewIngredientCard[];
+// 食材卡片响应（列表用）
+export interface IngredientCardResp {
+  id: number;
+  ingredientCode: string;
+  name: string;
+  image: ImageResp;
+}
+
+// 产品详情响应
+export interface ProductResp {
+  productCode: string;
+  ingredientCode: string;
+  name: string;
+  description: string;
+  amount: number;
+  unit: string;
+  price: number;
+  allergenType: string;
+  images: ImageResp[];
+}
+
+// 产品卡片响应（列表用）
+export interface ProductCardResp {
+  id: number;
+  productCode: string;
+  ingredientCode: string;
+  name: string;
+  amount: number;
+  unit: string;
+  price: number;
+  allergenType: string;
+  image: ImageResp;
+}
+
+// 菜品食材卡片响应
+export interface DishIngredientCardResp {
+  id: number;
+  ingredientCode: string;
+  name: string;
+  quantity: string;
+  note: string;
+  image: ImageResp;
+}
+
+// ========== 游标分页通用响应 ==========
+
+// 通用游标响应（与后端 dto.CursorResp 对应）
+export interface CursorResp<T> {
+  items: T[];
   cursor: number;
-  hasMore: boolean;
+  has_more: boolean;
 }
 
-export interface ViewDishCard {
-	id    :   number;        
-	dishCode: string ;      
-	name    : string  ; 
-	Image?    :ImageResponse ;
-}
-
-export interface ViewDishCardListWithCursor {
-	dishes  : ViewDishCard[];
-	cursor  : number;
-	hasMore : boolean;
-}
-
-
-
-
-
-export interface ViewDishIngredientCard {
-	id             : number        
-	ingredientCode : string        
-	name           : string        
-	quantity       : string        
-	note           : string        
-	image?         : ImageResponse 
-}
-
-export interface ViewDishIngredientCardListWithCursor {
-	dishIngredients : ViewDishIngredientCard[];
-	cursor          : number;
-  hasMore         : boolean;
-}
+// 特定类型的游标响应（便于类型推导）
+export type DishCardCursorResp = CursorResp<DishCardResp>;
+export type IngredientCardCursorResp = CursorResp<IngredientCardResp>;
+export type DishIngredientCardCursorResp = CursorResp<DishIngredientCardResp>;
+export type ProductCardCursorResp = CursorResp<ProductCardResp>;

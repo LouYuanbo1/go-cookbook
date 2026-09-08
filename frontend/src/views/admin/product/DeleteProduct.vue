@@ -319,7 +319,7 @@ import { ref, reactive, computed, watch } from 'vue';
 import request from '../../../api/request';
 import ScrollPicker, { type FetchResult } from '../../../components/picker/ScrollPicker.vue';
 import { type ImageItem } from '../../../components/image/ImageManager.vue'; // 仅保留类型，组件已移除
-import type { ImageResponse } from '../../../types/types';
+import type { ImageResp } from '../../../types/types';
 
 // ---------- 枚举选项（与后端保持一致）----------
 const unitOptions = [
@@ -444,7 +444,7 @@ const fetchProductDetail = async (code: string) => {
     selectedIngredientCode.value = data.ingredientCode;
 
     // 构建图片列表（只读）
-    const existingImages: ImageItem[] = (data.images || []).map((img: ImageResponse) => ({
+    const existingImages: ImageItem[] = (data.images || []).map((img: ImageResp) => ({
       id: img.id,
       url: img.imageURL,
       status: 'existing',

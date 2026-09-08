@@ -2,22 +2,20 @@ package main
 
 import (
 	"fmt"
+	"go-cookbook/internal/common/utils/img"
+	"go-cookbook/internal/common/utils/jwt"
+	"go-cookbook/internal/common/utils/tempfs"
 	"go-cookbook/internal/config"
-	authController "go-cookbook/internal/controller/auth"
-	dishController "go-cookbook/internal/controller/dish"
-	ingredientController "go-cookbook/internal/controller/ingredient"
-	productController "go-cookbook/internal/controller/product"
-	qrcodeController "go-cookbook/internal/controller/qrcode"
-	authService "go-cookbook/internal/service/auth"
-	dishService "go-cookbook/internal/service/dish"
-	ingredientService "go-cookbook/internal/service/ingredient"
-	"go-cookbook/internal/service/jwt"
-	productService "go-cookbook/internal/service/product"
-	"go-cookbook/internal/utils/imgutil"
+	"go-cookbook/internal/qrcode"
 	"log"
 	"os"
 	"path/filepath"
 	"time"
+
+	"go-cookbook/internal/auth"
+	"go-cookbook/internal/dish"
+	"go-cookbook/internal/ingredient"
+	"go-cookbook/internal/product"
 
 	"github.com/LouYuanbo1/go-webservice/breaker"
 	"github.com/LouYuanbo1/go-webservice/cache"
@@ -44,7 +42,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("初始化GORM失败: %v", err)
 	}
-	imgUtil := imgutil.NewImgUtil(appcfg.ImgUtil)
+	imgUtil := img.NewImgUtil(appcfg.Img)
 
 	redisBreaker := breaker.NewBreaker(
 		breaker.WithName("redis"),
@@ -69,19 +67,21 @@ func main() {
 		CacheSafeGapBetweenIndexAndPrimary: 5 * time.Second,
 	})
 
-	dishService := dishService.NewDishService(gormcDB, imgUtil)
-	productService := productService.NewProductService(gormcDB, imgUtil)
-	ingredientService := ingredientService.NewIngredientService(gormcDB, imgUtil)
+	tempFs := tempfs.NewTempFs(24*time.Hour, 24*time.Hour)
 
-	qrCodeController := qrcodeController.NewQRCodeController()
-	dishController := dishController.NewDishController(dishService, imgUtil)
-	productController := productController.NewProductController(productService, imgUtil)
-	ingredientController := ingredientController.NewIngredientController(ingredientService, imgUtil)
+	dishService := dish.NewDishService(gormcDB, imgUtil, tempFs, filepath.Join("tempfile", "dish"), filepath.Join("uploads", "dish"))
+	productService := product.NewProductService(gormcDB, imgUtil, tempFs, filepath.Join("tempfile", "product"), filepath.Join("uploads", "product"))
+	ingredientService := ingredient.NewIngredientService(gormcDB, imgUtil, tempFs, filepath.Join("tempfile", "ingredient"), filepath.Join("uploads", "ingredient"))
 
-	authService := authService.NewAuthService(appcfg.Auth.Password)
-	jwtService := jwt.NewJWTService(appcfg.Auth.Password, 24*7, "go-cookbook", []string{"admin"})
+	qrCodeController := qrcode.NewQRCodeHandler()
+	dishController := dish.NewDishHandler(dishService)
+	productController := product.NewProductHandler(productService)
+	ingredientController := ingredient.NewIngredientHandler(ingredientService)
 
-	authController := authController.NewAuthController(authService)
+	authService := auth.NewAuthService(appcfg.Auth.Password)
+	jwtService := jwt.NewJWTUtil(appcfg.Auth.Password, 24*7, "go-cookbook", []string{"admin"})
+
+	authController := auth.NewAuthHandler(authService)
 
 	router := gin.Default()
 	router.MaxMultipartMemory = 8 << 20

@@ -63,22 +63,14 @@
 import { ref, onMounted } from 'vue'
 import request from '../../api/request'
 import { useRouter } from 'vue-router'
-import type { ImageResponse, ViewDishIngredientCard } from '../../types/types'
+import type { DishIngredientCardResp, DishResp } from '../../types/types'
 import BaseDetailCard from '../../components/detailcard/BaseDetailCard.vue'
 import RecipeMethodCard from '../../components/detailcard/RecipeMethodCard.vue'
 import IngredientGridCard from '../../components/gridcard/IngredientGridCard.vue'
 
-interface ViewDishResponse {
-  dishCode: string
-  name: string
-  description: string
-  recipe: string
-  images: ImageResponse[]
-}
-
 // 响应式数据
-const dish = ref<ViewDishResponse | null>(null)
-const ingredientList = ref<ViewDishIngredientCard[]>([])
+const dish = ref<DishResp | null>(null)
+const ingredientList = ref<DishIngredientCardResp[]>([])
 const loading = ref(true)
 
 // 初始化数据
@@ -104,7 +96,7 @@ const initializeDishData = async () => {
     ])
 
     dish.value = dishRes.data
-    ingredientList.value = ingredientsRes.data?.dishIngredients || []
+    ingredientList.value = ingredientsRes.data?.items || []
   } catch (error) {
     console.error('Failed to fetch data:', error)
   } finally {

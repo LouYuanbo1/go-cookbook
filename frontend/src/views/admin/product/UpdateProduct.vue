@@ -337,8 +337,7 @@ import { ref, reactive, computed, watch } from 'vue';
 import request from '../../../api/request';
 import ScrollPicker, { type FetchResult } from '../../../components/picker/ScrollPicker.vue';
 import ImageManager, { type ImageItem } from '../../../components/image/ImageManager.vue';
-import type {NewImageFile, ImageRequest, ImageResponse } from '../../../types/types';
-import {v7 as uuidv7} from 'uuid';
+import type { ImageResp } from '../../../types/types';
 
 // ---------- 枚举选项（需与后端model保持一致）----------
 const unitOptions = [
@@ -521,7 +520,7 @@ const fetchProductDetail = async (code: string) => {
     selectedIngredientCode.value = data.ingredientCode;
 
     // 构建现有图片列表
-    const existingImages: ImageItem[] = (data.images || []).map((img: ImageResponse) => ({
+    const existingImages: ImageItem[] = (data.images || []).map((img: ImageResp) => ({
       id: img.id,
       url: img.imageURL,
       status: 'existing',
@@ -630,58 +629,40 @@ const handleSubmit = async () => {
   formData.append('description', form.description.trim());
   formData.append('allergenType', form.allergenType);
 
-  // 构造图片请求数组
-  const imageRequests: ImageRequest[] = [];
-  const newImageFiles: NewImageFile[] = [];
+  // 构造图片数据（扁平化结构）
+  const newImageFiles: File[] = [];
+  const newImageOrders: number[] = [];
 
   imageList.value.forEach((img, idx) => {
-    if (img.status === 'existing' && img.id) {
-      imageRequests.push({
-        type: 'existing',
-        id: img.id,
-        sortOrder: idx,
-      });
-    } else if (img.status === 'new' && img.file) {
-      const tempID = "temp"+uuidv7();
-      imageRequests.push({
-        type: 'new',
-        id: 0,
-        tempID:tempID,
-        sortOrder: idx,
-      });
-      newImageFiles.push({
-        tempID:tempID,
-        file: img.file,
-      });
+    if (img.status === 'new' && img.file) {
+      newImageFiles.push(img.file);
+      newImageOrders.push(idx);
     }
   });
 
+  // 添加新图片文件
+  newImageFiles.forEach((file) => {
+    formData.append('newImages', file);
+  });
+
+  // 添加新图片的排序顺序
+  newImageOrders.forEach((order) => {
+    formData.append('newImageOrders', order.toString());
+  });
+
+  // 现有图片的更新（ID + 排序顺序），每个图片序列化为一个 JSON 字符串
+  imageList.value.forEach((img, idx) => {
+    if (img.status === 'existing' && img.id) {
+      formData.append('updatedImages', JSON.stringify({
+        id: img.id,
+        sortOrder: idx,
+      }));
+    }
+  });
+
+  // 删除的图片ID列表
   deletedImageIds.value.forEach((id) => {
-    imageRequests.push({
-      type: 'deleted',
-      id,
-      sortOrder: 0,
-    });
-  });
-
-  imageRequests.forEach((req,index) =>{
-    formData.append(`images[${index}].type`, req.type);
-    formData.append(`images[${index}].id`, req.id.toString());
-    formData.append(`images[${index}].tempID`, req.tempID || '');
-    formData.append(`images[${index}].sortOrder`, req.sortOrder.toString());
-  })
-
-  /*
-  newImageFiles.forEach((img) => {
-    formData.append('newImageTempIDs', img.tempID);
-    formData.append('newImages', img.file);
-  });
-  */
-
-  
-  newImageFiles.forEach((img,index) => {
-    formData.append(`newImages[${index}].tempID`, img.tempID);
-    formData.append(`newImages[${index}].file`, img.file);
+    formData.append('deletedImageIDs', id.toString());
   });
   
 
