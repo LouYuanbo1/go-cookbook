@@ -26,7 +26,7 @@ auth:
   password: "your_password"
   secret_key: "your_secret_key"
   token_expire: 24
-img_util:
+img:
   transform:
     width: 800
     height: 600

@@ -32,6 +32,7 @@ go.work.sum
 # .vscode/
 
 # Uploads
-backend/cmd/uploads/*
+backend/cmd/uploads
+backend/cmd/tempfile
 # Config
 backend/config/config.yaml

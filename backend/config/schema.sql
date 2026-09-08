@@ -24,8 +24,11 @@ CREATE TABLE IF NOT EXISTS ingredients (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_ingredients_deleted_at ON ingredients (deleted_at);
 
 
 -- 创建 dishes 表

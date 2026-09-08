@@ -25,21 +25,11 @@
       <!-- 食材信息 -->
       <div class="ingredient-info">
         <div class="ingredient-name">{{ ingredient.name }}</div>
-        <div class="ingredient-quantity">{{ ingredient.quantity }}</div>
+        <div v-if="'quantity' in ingredient && ingredient.quantity" class="ingredient-quantity">{{ ingredient.quantity }}</div>
 
-        <div v-if="ingredient.note" class="ingredient-note">
+        <div v-if="'note' in ingredient && ingredient.note" class="ingredient-note">
           {{ ingredient.note }}
         </div>
-
-        <!-- 保留注释的过敏原标签（如有需要可启用） -->
-        <!--
-        <div
-          v-if="ingredient.allergenType"
-          class="allergen-tag"
-        >
-          {{ getAllergenLabel(ingredient.allergenType) }}
-        </div>
-        -->
 
         <div class="ingredient-code">
           编码: {{ ingredient.ingredientCode }}
@@ -58,10 +48,10 @@
 </template>
 
 <script setup lang="ts">
-import type { ViewDishIngredientCard } from "../../types/types"
+import type { IngredientCardResp, DishIngredientCardResp } from "../../types/types"
 
 defineProps<{
-  ingredient: ViewDishIngredientCard
+  ingredient: IngredientCardResp | DishIngredientCardResp
 }>()
 
 const imageError = (event: Event) => {

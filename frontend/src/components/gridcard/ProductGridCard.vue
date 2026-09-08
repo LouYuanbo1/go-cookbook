@@ -81,23 +81,14 @@ const AllergenType = {
 type UnitType = typeof UnitType[keyof typeof UnitType];
 type AllergenType = typeof AllergenType[keyof typeof AllergenType];
 
-interface ViewProductCard {
-  productCode: string;
-  name: string;
-  amount: number;
-  unit: UnitType;
-  description: string;
-  price: number;
-  allergenType: AllergenType;
-  image?: { imageURL: string };
-}
+import type { ProductCardResp } from "../../types/types"
 
 const props = defineProps<{
-  product: ViewProductCard;
+  product: ProductCardResp;
 }>()
 
-const getUnitLabel = (unit: UnitType): string => {
-  const unitLabels: Record<UnitType, string> = {
+const getUnitLabel = (unit: string): string => {
+  const unitLabels: Record<string, string> = {
     [UnitType.G]: '克',
     [UnitType.KG]: '千克',
     [UnitType.ML]: '毫升',
@@ -107,8 +98,8 @@ const getUnitLabel = (unit: UnitType): string => {
   return unitLabels[unit] || unit
 }
 
-const getAllergenLabel = (allergen: AllergenType): string => {
-  const allergenLabels: Record<AllergenType, string> = {
+const getAllergenLabel = (allergen: string): string => {
+  const allergenLabels: Record<string, string> = {
     [AllergenType.NONE]: '无',
     [AllergenType.GLUTEN]: '麸质',
     [AllergenType.MILK]: '牛奶',

@@ -40,14 +40,10 @@
 </template>
 
 <script setup lang="ts">
-interface ViewDishCard {
-  dishCode: string;
-  name: string;
-  image?: { imageURL: string };
-}
+import type { DishCardResp } from "../../types/types"
 
 defineProps<{
-  dish: ViewDishCard;
+  dish: DishCardResp;
 }>()
 
 const imageError = (event: Event) => {

@@ -1,0 +1,97 @@
+services:
+  # ============ Go 后端服务 ============
+  backend:
+    build:
+      context: ./backend          # 使用 backend 目录下的 Dockerfile
+      dockerfile: Dockerfile
+    image: go-cookbook-backend:latest
+    container_name: go-cookbook-backend
+    ports:
+      - "${APP_PORT:-8080}:8080"   # 从 .env 读取端口，带默认值
+    environment:
+      # 数据库连接（PostgreSQL 风格）
+      - DB_HOST=${DB_HOST:-db}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_USER=${DB_USER:-user}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-cookbook}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      #- REDIS_PASSWORD=${REDIS_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      #- APP_ENV=${APP_ENV:-development}
+    depends_on:
+      db:
+        condition: service_healthy   # 等待数据库健康检查通过后再启动
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ============ 前端服务 ============
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: myapp-frontend:latest
+    container_name: myapp-frontend
+    ports:
+      - "3000:80"                  # 前端静态文件服务端口
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ============ PostgreSQL 数据库 ============
+  db:
+    image: postgres:18.6-alpine     # 使用 PostgreSQL 18.6 轻量版
+    container_name: go-cookbook-db
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-cookbook}
+      - POSTGRES_USER=${POSTGRES_USER:-user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"                # PostgreSQL 默认端口
+    volumes:
+      - db-data:/var/lib/postgresql/data     # 数据持久化
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql  # 初始化脚本
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      # PostgreSQL 健康检查：pg_isready 是官方推荐方式
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app_user} -d ${POSTGRES_DB:-myapp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============ Redis 缓存 ============
+  redis:
+    image: redis:8.10.0-alpine
+    container_name: go-cookbook-redis
+    #command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"                # 开发用
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      #test ["CMD", "redis-cli", "--pass", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD", "redis-cli","ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# ============ 网络 ============
+networks:
+  app-network:
+    driver: bridge
+
+# ============ 数据卷 ============
+volumes:
+  db-data:
+  redis-data:

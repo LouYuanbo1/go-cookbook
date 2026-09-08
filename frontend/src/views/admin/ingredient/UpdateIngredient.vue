@@ -190,8 +190,7 @@ import ScrollPicker from '../../../components/picker/ScrollPicker.vue';
 import type { FetchResult } from '../../../components/picker/ScrollPicker.vue';
 import ImageManager from '../../../components/image/ImageManager.vue';
 import type { ImageItem } from '../../../components/image/ImageManager.vue';
-import type { NewImageFile,ImageRequest,ImageResponse, ViewIngredientCard, ViewIngredientCardListWithCursor } from '../../../types/types';
-import { v7 as uuidv7 } from 'uuid';
+import type { ImageResp, IngredientCardResp, IngredientCardCursorResp } from '../../../types/types';
 
 // ---------- 表单状态 ----------
 const form = reactive({
@@ -237,17 +236,17 @@ const handleImageLoadError = (event: Event) => {
 */
 
 // ---------- ScrollPicker 数据获取 ----------
-const fetchIngredients = async (cursor: number, limit: number): Promise<FetchResult<ViewIngredientCard>> => {
+const fetchIngredients = async (cursor: number, limit: number): Promise<FetchResult<IngredientCardResp>> => {
   const res = await request({
     url: '/api/ingredients',
     method: 'GET',
     params: { cursor, limit },
   });
-  const data: ViewIngredientCardListWithCursor = res.data;
+  const data: IngredientCardCursorResp = res.data;
   return {
-    items: data.ingredients || [],
+    items: data.items || [],
     cursor: data.cursor || 0,
-    hasMore: data.hasMore || false,
+    hasMore: data.has_more || false,
   };
 };
 
@@ -266,7 +265,7 @@ const closeIngredientPicker = () => {
 };
 
 // ---------- 选中食材（抽屉回调）----------
-const handleIngredientSelected = (item: ViewIngredientCard) => {
+const handleIngredientSelected = (item: IngredientCardResp) => {
   fetchIngredientDetail(item.ingredientCode);
   closeIngredientPicker();
 };
@@ -289,7 +288,7 @@ const fetchIngredientDetail = async (code: string) => {
     form.description = data.description || '';
 
     // 构建现有图片列表（直接赋值给 imageList，ImageManager 会自动接管）
-    const existingImages: ImageItem[] = (data.images || []).map((img: ImageResponse) => ({
+    const existingImages: ImageItem[] = (data.images || []).map((img: ImageResp) => ({
       id: img.id,
       url: img.imageURL,
       status: 'existing',
@@ -344,57 +343,39 @@ const handleSubmit = async () => {
   formData.append('name', form.name.trim());
   formData.append('description', form.description.trim());
 
-  const newImageFiles: NewImageFile[] = [];
-
-  
-  const imageRequests: ImageRequest[] = [];
+  const newImageFiles: File[] = [];
+  const newImageOrders: number[] = [];
 
   imageList.value.forEach((img, idx) => {
-    if (img.status === 'existing' && img.id) {
-      imageRequests.push({
-        type: 'existing',
-        id: img.id,
-        sortOrder: idx,
-      });
-    } else if (img.status === 'new' && img.file) {
-      const tempID = "temp"+uuidv7();
-      imageRequests.push({
-        type: 'new',
-        id: 0,
-        tempID: tempID,
-        sortOrder: idx,
-      });
-      newImageFiles.push({
-        tempID: tempID,
-        file: img.file,
-      });
+    if (img.status === 'new' && img.file) {
+      newImageFiles.push(img.file);
+      newImageOrders.push(idx);
     }
   });
 
-
-  console.log("删除图片ID列表:", deletedImageIds.value);
-
-
-  deletedImageIds.value.forEach(id => {
-    console.log("删除图片ID:", id);
-    imageRequests.push({
-      type: 'deleted',
-      id,
-      sortOrder: 0,
-    });
+  // 添加新图片文件
+  newImageFiles.forEach((file) => {
+    formData.append('newImages', file);
   });
 
-  imageRequests.forEach((req,index) =>{
-    formData.append(`images[${index}].type`, req.type);
-    formData.append(`images[${index}].id`, req.id.toString());
-    formData.append(`images[${index}].tempID`, req.tempID || '');
-    formData.append(`images[${index}].sortOrder`, req.sortOrder.toString());
-  })
-  
-  
-  newImageFiles.forEach((img,index) => {
-    formData.append(`newImages[${index}].tempID`, img.tempID);
-    formData.append(`newImages[${index}].file`, img.file);
+  // 添加新图片的排序顺序
+  newImageOrders.forEach((order) => {
+    formData.append('newImageOrders', order.toString());
+  });
+
+  // 2. 现有图片的更新（ID + 排序顺序），每个图片序列化为一个 JSON 字符串
+  imageList.value.forEach((img, idx) => {
+    if (img.status === 'existing' && img.id) {
+      formData.append('updatedImages', JSON.stringify({
+        id: img.id,
+        sortOrder: idx,
+      }));
+    }
+  });
+
+  // 3. 删除的图片ID列表
+  deletedImageIds.value.forEach((id) => {
+    formData.append('deletedImageIDs', id.toString());
   });
   
 

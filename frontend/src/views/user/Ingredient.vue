@@ -60,35 +60,12 @@ import { useRouter } from 'vue-router'
 import BaseDetailCard from '../../components/detailcard/BaseDetailCard.vue'
 import ProductGridCard from '../../components/gridcard/ProductGridCard.vue'
 
-// 类型定义（可根据实际情况抽取到公共文件）
-interface ImageResponse {
-  id: number
-  sortOrder: number
-  imageURL: string
-}
-
-interface ViewProductCard {
-  productCode: string
-  name: string
-  amount: number
-  unit: 'g' | 'kg' | 'ml' | 'l' | 'item'
-  description: string
-  price: number
-  allergenType: 'none' | 'gluten' | 'milk' | 'eggs' | 'fish' | 'shellfish' | 'treenuts' | 'peanuts' | 'wheat' | 'soybeans'
-  image: ImageResponse
-}
-
-interface ViewIngredientResponse {
-  ingredientCode: string
-  name: string
-  description: string
-  images: ImageResponse[]
-}
+import type { ImageResp, IngredientResp, ProductCardResp } from '../../types/types'
 
 // 响应式数据
-const ingredient = ref<ViewIngredientResponse | null>(null)
+const ingredient = ref<IngredientResp | null>(null)
 const loading = ref(true)
-const productList = ref<ViewProductCard[]>([])
+const productList = ref<ProductCardResp[]>([])
 
 // 初始化数据
 const initializeIngredientData = async () => {
@@ -113,7 +90,7 @@ const initializeIngredientData = async () => {
     ])
 
     ingredient.value = ingredientRes.data
-    productList.value = productsRes.data.products || []
+    productList.value = productsRes.data?.items || []
   } catch (error) {
     console.error('Failed to fetch data:', error)
   } finally {

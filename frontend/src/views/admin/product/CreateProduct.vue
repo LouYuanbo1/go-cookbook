@@ -245,7 +245,7 @@ import request from '../../../api/request';
 import ImageManager from '../../../components/image/ImageManager.vue';
 import ScrollPicker, { type FetchFunction, type FetchResult } from '../../../components/picker/ScrollPicker.vue';
 import type { ImageItem } from '../../../components/image/ImageManager.vue';
-import type { ViewIngredientCard ,ViewIngredientCardListWithCursor} from '../../../types/types';
+import type { IngredientCardResp, IngredientCardCursorResp } from '../../../types/types';
 
 
 interface CreateProductForm {
@@ -392,7 +392,7 @@ watch(
 );
 
 // ---------- 获取食材列表（用于 ScrollPicker）----------
-const fetchIngredients: FetchFunction = async (cursor: number, limit: number): Promise<FetchResult<ViewIngredientCard>> => {
+const fetchIngredients: FetchFunction = async (cursor: number, limit: number): Promise<FetchResult<IngredientCardResp>> => {
   try {
     // 假设后端接口：GET /api/ingredients?cursor=0&limit=20
     const response = await request({
@@ -400,12 +400,12 @@ const fetchIngredients: FetchFunction = async (cursor: number, limit: number): P
       method: 'GET',
       params: { cursor, limit },
     });
-    // 根据实际返回结构调整，这里假设返回 { items, cursor, hasMore }
-    const data: ViewIngredientCardListWithCursor = response.data;
+    // 根据实际返回结构调整，这里假设返回 { items, cursor, has_more }
+    const data: IngredientCardCursorResp = response.data;
     return {
-      items: data.ingredients || [],
+      items: data.items || [],
       cursor: data.cursor || 0,
-      hasMore: data.hasMore || false,
+      hasMore: data.has_more || false,
     };
   } catch (error) {
     console.error('获取食材列表失败:', error);

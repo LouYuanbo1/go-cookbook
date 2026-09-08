@@ -180,7 +180,7 @@ import { ref, reactive } from 'vue';
 import request from '../../../api/request';
 import ScrollPicker from '../../../components/picker/ScrollPicker.vue';
 import type { FetchResult } from '../../../components/picker/ScrollPicker.vue';
-import type { ImageResponse, ViewIngredientCard, ViewIngredientCardListWithCursor } from '../../../types/types';
+import type { ImageResp, IngredientCardResp, IngredientCardCursorResp } from '../../../types/types';
 
 //const router = useRouter();
 
@@ -205,17 +205,17 @@ const showIngredientPicker = ref(false);
 // const scrollPickerRef = ref<InstanceType<typeof ScrollPicker> | null>(null);
 
 // ---------- ScrollPicker 数据获取 ----------
-const fetchIngredients = async (cursor: number, limit: number): Promise<FetchResult<ViewIngredientCard>> => {
+const fetchIngredients = async (cursor: number, limit: number): Promise<FetchResult<IngredientCardResp>> => {
   const res = await request({
     url: '/api/ingredients',
     method: 'GET',
     params: { cursor, limit },
   });
-  const data: ViewIngredientCardListWithCursor = res.data;
+  const data: IngredientCardCursorResp = res.data;
   return {
-    items: data.ingredients || [],
+    items: data.items || [],
     cursor: data.cursor || 0,
-    hasMore: data.hasMore || false,
+    hasMore: data.has_more || false,
   };
 };
 
@@ -228,7 +228,7 @@ const closeIngredientPicker = () => {
 };
 
 // ---------- 选中食材（抽屉回调）----------
-const handleIngredientSelected = (item: ViewIngredientCard) => {
+const handleIngredientSelected = (item: IngredientCardResp) => {
   fetchIngredientDetail(item.ingredientCode);
   closeIngredientPicker();
 };
@@ -249,7 +249,7 @@ const fetchIngredientDetail = async (code: string) => {
     form.description = data.description || '';
 
     // 构建图片列表（仅用于展示）
-    const images: { id?: number; url: string }[] = (data.images || []).map((img: ImageResponse) => ({
+    const images: { id?: number; url: string }[] = (data.images || []).map((img: ImageResp) => ({
       id: img.id,
       url: img.imageURL,
     }));
