@@ -6,28 +6,42 @@
 
 ```
 go-cookbook/
-├── backend/           # 后端Go语言代码
+├── backend/              # 后端Go语言代码
 │   ├── cmd/
-│   │   ├── main.go    # 应用主入口
-│   │   └── uploads/   # 上传文件存储目录（包含dishes、ingredients、products子目录）
-│   ├── config/        # 配置文件目录
+│   │   ├── main.go       # 应用主入口
+│   │   └── uploads/      # 上传文件存储目录（dish、ingredient、product子目录）
+│   ├── config/           # 配置文件目录
 │   │   ├── config_example.yaml
 │   │   └── schema.sql
-│   ├── internal/      # 内部包
-│   │   ├── config/    # 配置处理
-│   │   ├── controller/# 控制器层（auth、dish、ingredient、product、qrcode）
-│   │   ├── dto/       # 数据传输对象
-│   │   ├── middleware/# 中间件（JWT）
-│   │   ├── model/     # 数据模型
-│   │   ├── service/   # 服务层（auth、dish、ingredient、jwt、product）
-│   │   └── utils/     # 工具函数（imgutil、multipart）
-│   ├── go.mod         # Go模块定义
-│   └── go.sum         # 依赖版本锁定
-├── frontend/          # 前端Vue代码
-│   ├── node_modules/  # 前端依赖
-│   ├── index.html     # 入口HTML
-│   └── package.json   # 前端项目配置
-└── README.md          # 项目说明文档
+│   ├── internal/         # 内部包（领域模块化架构）
+│   │   ├── auth/         # 认证模块（handler + service + dto）
+│   │   ├── common/       # 公共模块
+│   │   │   ├── dto/      # 数据传输对象（请求/响应结构体）
+│   │   │   └── utils/    # 工具函数
+│   │   │       ├── img/  # 图片处理工具
+│   │   │       ├── jwt/  # JWT令牌工具
+│   │   │       └── tempfs/# 临时文件系统
+│   │   ├── config/       # 配置解析
+│   │   ├── dish/         # 菜品模块（handler + service）
+│   │   ├── ingredient/   # 食材模块（handler + service）
+│   │   ├── middleware/   # 中间件（JWT认证）
+│   │   ├── model/        # 数据模型（GORM实体）
+│   │   ├── product/      # 产品模块（handler + service）
+│   │   └── qrcode/       # 二维码模块（handler）
+│   ├── go.mod            # Go模块定义
+│   └── go.sum            # 依赖版本锁定
+├── frontend/             # 前端Vue3代码
+│   ├── src/
+│   │   ├── api/          # API请求封装（拦截器、守卫）
+│   │   ├── assets/       # 静态资源
+│   │   ├── components/   # 通用组件（卡片、图片、Excel、二维码等）
+│   │   ├── stores/       # Pinia状态管理
+│   │   ├── types/        # TypeScript类型定义
+│   │   └── views/        # 页面视图（admin管理端 + user用户端）
+│   ├── index.html        # 入口HTML
+│   └── package.json      # 前端项目配置
+├── docker-compose.yml    # Docker编排配置
+└── README.md             # 项目说明文档
 ```
 
 ## 技术栈
@@ -116,15 +130,16 @@ go-cookbook/
 
 ### 环境要求
 - Go 1.27+
-- SQLite 3
-- Redis（可选，用于缓存）
+- PostgreSQL
+- Redis
 - Node.js 18+
 
 ### 后端部署
 
 1. **配置数据库**
-   - SQLite数据库会自动创建
-   - 修改 `backend/config/config.yaml` 中的配置信息（可选）
+   - 确保 PostgreSQL 服务已启动
+   - 参考 `backend/config/config_example.yaml` 创建 `backend/config/config.yaml`
+   - 修改数据库连接信息（host、port、user、password、dbname）
 
 2. **初始化数据库**
    - 运行应用时会自动执行 `backend/config/schema.sql` 初始化数据库结构
@@ -156,48 +171,50 @@ go-cookbook/
 ## API 接口
 
 ### 认证接口
-- `POST /auth/login` - 用户登录
+- `POST /api/auth/admin/login` - 管理员登录
 
 ### 菜品接口
-- `GET /api/dishes` - 获取菜品列表
-- `POST /api/dishes` - 创建菜品
+- `GET /api/dishes` - 获取菜品列表（游标分页）
+- `POST /api/dishes` - 创建菜品（需认证）
 - `GET /api/dishes/:dishCode` - 获取菜品详情
-- `PATCH /api/dishes/:code` - 更新菜品
-- `DELETE /api/dishes/:code` - 删除菜品
+- `PATCH /api/dishes/:dishCode` - 更新菜品（需认证）
+- `DELETE /api/dishes/:dishCode` - 删除菜品（需认证）
 - `GET /api/dishes/:dishCode/ingredients` - 获取菜品关联食材列表
-- `GET /api/dishes/export` - 导出菜品到Excel
+- `GET /api/dishes/export` - 导出菜品到Excel（需认证）
 
 ### 食材接口
-- `GET /api/ingredients` - 获取食材列表
-- `POST /api/ingredients` - 创建食材
-- `GET /api/ingredients/:ingrdientCode` - 获取食材详情
-- `PATCH /api/ingredients/:ingrdientCode` - 更新食材
-- `DELETE /api/ingredients/:ingrdientCode` - 删除食材
-- `GET /api/ingredients/:ingrdientCode/products` - 获取食材关联产品列表
-- `POST /api/ingredients/import` - 从Excel导入食材数据
-- `GET /api/ingredients/export` - 导出食材到Excel
+- `GET /api/ingredients` - 获取食材列表（游标分页）
+- `POST /api/ingredients` - 创建食材（需认证）
+- `GET /api/ingredients/:ingredientCode` - 获取食材详情
+- `PATCH /api/ingredients/:ingredientCode` - 更新食材（需认证）
+- `DELETE /api/ingredients/:ingredientCode` - 删除食材（需认证）
+- `GET /api/ingredients/:ingredientCode/products` - 获取食材关联产品列表
+- `POST /api/ingredients/import` - 从Excel导入食材数据（需认证）
+- `GET /api/ingredients/export` - 导出食材到Excel（需认证）
 
 ### 产品接口
-- `POST /api/products` - 创建产品
+- `POST /api/products` - 创建产品（需认证）
+- `POST /api/products/import` - 从Excel导入产品数据（需认证）
+- `GET /api/products/export` - 导出产品到Excel（需认证）
 - `GET /api/products/:productCode` - 获取产品详情
-- `PUT /api/products/:productCode` - 更新产品
-- `DELETE /api/products/:productCode` - 删除产品
 - `GET /api/products/:productCode/dishes` - 获取产品关联菜品列表
-- `POST /api/products/import` - 从Excel导入产品数据
-- `GET /api/products/export` - 导出产品到Excel
+- `PATCH /api/products/:productCode` - 更新产品（需认证）
+- `DELETE /api/products/:productCode` - 删除产品（需认证）
 
 ### 二维码接口
-- `GET /api/qrcode` - 生成二维码
+- `POST /api/qrcode?url=<目标URL>` - 生成二维码图片
 
 ## 项目特点
 
-1. **分层架构设计**
-   - 清晰的控制器、服务、模型分层结构
+1. **领域模块化架构**
+   - 按业务领域划分模块（dish、ingredient、product、auth、qrcode），每个模块独立包含 handler 和 service
+   - 公共能力抽取到 common 包（dto、utils），减少代码耦合
    - 使用 go-webservice 封装库加速开发
 
 2. **完整的CRUD操作**
    - 支持菜品、食材、产品的完整增删改查
    - 提供Excel导入/导出功能，方便数据管理
+   - 支持游标分页查询，适合大数据量场景
 
 3. **图片处理系统**
    - 集成图片上传和自动处理
@@ -237,17 +254,20 @@ go-cookbook/
 - **文件上传** - 支持多文件上传
 - **图片处理** - 自动图片优化
 - **二维码生成** - 集成二维码生成功能
-- **缓存机制** - Redis缓存优化查询性能
+- **缓存机制** - Redis缓存 + SingleFlight 防缓存击穿
+- **熔断保护** - Redis熔断器，防止缓存雪崩
+- **临时文件系统** - 上传文件暂存与自动清理
 
 ## 开发指南
 
 ### 后端开发
 
-1. **添加新功能**
-   - 在 `internal/service/` 中添加新服务
-   - 在 `internal/controller/` 中添加对应的控制器
-   - 在 `internal/dto/` 中定义数据传输对象
+1. **添加新功能模块**
+   - 在 `internal/` 下创建新模块目录（如 `internal/newfeature/`）
+   - 在模块目录中创建 `handler.go`（路由注册 + 请求处理）和 `service.go`（业务逻辑）
+   - 在 `internal/common/dto/` 中定义通用的请求/响应结构体
    - 在 `internal/model/` 中定义数据模型
+   - 在 `cmd/main.go` 中初始化并注册路由
 
 2. **数据库迁移**
    - 修改 `config/schema.sql` 文件
@@ -257,13 +277,14 @@ go-cookbook/
 
 1. **添加新页面**
    - 在 `src/components/` 中添加新组件
-   - 在 `src/views/` 中创建新页面组件
-   - 在 `src/router/` 中添加路由配置
-   - 在 `src/store/` 中添加状态管理
+   - 在 `src/views/` 中按 admin/user 分类创建页面组件
+   - 在 `src/router.ts` 中添加路由配置
+   - 在 `src/stores/` 中添加状态管理
+   - 在 `src/types/types.ts` 中定义 TypeScript 类型
 
 2. **API调用**
-   - 使用Axios调用后端API
-   - 处理响应和错误情况
+   - 在 `src/api/` 中封装 API 请求
+   - 使用拦截器统一处理认证和错误
 
 ## 许可证
 
